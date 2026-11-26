@@ -1,0 +1,6 @@
+# Replace with the real GitHub usernames. Each folder has ONE owner.
+/src/data/      @member-a-data
+/src/features/  @member-b-features
+/src/models/    @member-c-models
+/src/common/    @member-a-data @member-b-features @member-c-models
+/configs/       @member-a-data @member-b-features @member-c-models

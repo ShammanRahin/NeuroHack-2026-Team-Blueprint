@@ -1,0 +1,5 @@
+base: baseline
+name: b_word_plus_char
+features:
+  - {name: tfidf_char, params: {ngram: [2, 5]}}
+  - {name: tfidf_word, params: {max_features: 20000}}

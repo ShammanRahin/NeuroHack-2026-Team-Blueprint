@@ -1,0 +1,3 @@
+base: baseline
+name: c_nb
+model: {name: nb, params: {alpha: 0.5}}

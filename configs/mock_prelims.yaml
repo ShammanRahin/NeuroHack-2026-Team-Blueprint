@@ -1,0 +1,3 @@
+base: baseline
+name: mock_prelims
+data: {train: sample.csv}   # TransitText: 60 labelled rows only
