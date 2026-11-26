@@ -59,3 +59,11 @@ Team decision: no generated messages. Templates removed. Added instead:
 
 Local (50 sample rows, CPU features only): real rows only 0.805; + corruptions 0.801; + translit/views 0.793 - all
 within noise, so the GPU zero-shot features are what must move the score. Shift `worst` 0.56-0.58.
+
+## Zero-shot check on Kaggle T4 (86 labelled rows, no training) - 27 Nov 02:20
+| Signal | zero-shot macro-F1 | speed (1x T4) | 500k rows |
+|---|---|---|---|
+| Qwen2.5-1.5B-Instruct, label | 0.365 | 99 rows/s | ~1.4 h |
+| Qwen2.5-1.5B-Instruct, action | 0.085 | 99 rows/s | ~1.4 h |
+| mDeBERTa NLI, 16 hypotheses | (feature, not a classifier) | 35 rows/s | ~4.0 h |
+Decision: local LLM dropped (too weak for its cost); `preli_llm_local` kept only for reference. NLI kept, full 16 hypotheses.
