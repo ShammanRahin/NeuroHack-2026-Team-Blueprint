@@ -1,0 +1,10 @@
+base: baseline
+name: preli_baseline
+note: char tf-idf + logistic regression, 4 tasks, no extra data (reference point)
+data:
+  train: sample.csv
+  test: test.csv
+  sample_submission: sample_submission.csv
+  action_col: action
+  techniques_col: techniques
+tasks: [label, action, techniques]

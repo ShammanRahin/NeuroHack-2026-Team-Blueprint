@@ -24,11 +24,14 @@ def _load(name):
 def load(argv):
     kv = dict(a.split("=", 1) for a in argv)
     cfg = _load(kv.pop("exp"))
-    for k, v in kv.items():
+    for k, v in kv.items():  # dotted keys; list items by index, e.g. features.3.params.model=...
         *path, last = k.split(".")
         d = cfg
         for p in path:
-            d = d.setdefault(p, {})
-        d[last] = yaml.safe_load(v)
+            d = d[int(p)] if isinstance(d, list) else d.setdefault(p, {})
+        if isinstance(d, list):
+            d[int(last)] = yaml.safe_load(v)
+        else:
+            d[last] = yaml.safe_load(v)
     cfg["_hash"] = hashlib.sha1(json.dumps(cfg, sort_keys=True).encode()).hexdigest()[:8]
     return cfg

@@ -9,6 +9,9 @@ Three people, three folders, one command. Nobody edits anybody else's files.
 | C: model architecture (@adiburrahman2004, Adibur) | `src/models/` | `@model("name")` class with `fit(X, y)` / `predict_proba(X)` |
 | everyone (by PR) | `src/common/`, `configs/` | `contracts.py` documents the interfaces |
 
+## Competition configs
+`preli_full` (GPU: tf-idf + hand-crafted + multilingual-e5 + synthetic + augmentation), `preli_nogpu` (CPU, ~3 min for 500k), `preli` (bare baseline). Feature research and measured gains: `docs/FEATURES.md`.
+
 ## Final submission
 `python tools/build_submission.py --help`: builds the rulebook-compliant ZIP (notebook + csv + .env + README). Read `docs/RULES_SUMMARY.md` first; fill `docs/DECLARATION.md`.
 

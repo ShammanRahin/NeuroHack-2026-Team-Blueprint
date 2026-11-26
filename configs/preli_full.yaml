@@ -1,0 +1,11 @@
+base: preli
+name: preli_full
+note: char+word tf-idf + handcrafted tactics + multilingual-e5-small; synthetic templates; adversarial augmentation
+features:
+  - {name: tfidf_char, params: {ngram: [2, 5], max_features: 200000}}
+  - {name: tfidf_word, params: {max_features: 50000}}
+  - {name: handcrafted, params: {weight: 1.0}}
+  - {name: sbert, params: {model: intfloat/multilingual-e5-small, prefix: "query: ", weight: 1.0}}
+synthetic: {n_per_class: 200}
+augment: {copies: 1, strength: 0.06, noise_rows: 60, robust_eval: true}
+model: {name: logreg, params: {C: 4}}

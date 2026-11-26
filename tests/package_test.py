@@ -8,18 +8,18 @@ from smoke_test import make
 
 with tempfile.TemporaryDirectory() as t:
     t = pathlib.Path(t)
-    data = t / "data"; data.mkdir(); make(data)
-    pd.DataFrame({"id": range(100, 130), "label": 0}).to_csv(t / "sel.csv", index=False)
+    data = t / "data"; data.mkdir(); make(data, multi=True)
+    pd.DataFrame({"id": range(100, 130), "label": 0, "techniques": "NONE", "action": 0, "confidence": 0.9}).to_csv(t / "sel.csv", index=False)
     (t / "key.env").write_text("OPENAI_API_KEY=sk-test-1234567890abcdef\n")
-    cmd = [sys.executable, str(ROOT / "tools/build_submission.py"), "--exp", "baseline", "--team-name", "TeamX", "--team-code", "NH1",
-           "--submission", str(t / "sel.csv"), "--env", str(t / "key.env"), "--out", str(t / "dist"), "--n-classes", "3",
+    cmd = [sys.executable, str(ROOT / "tools/build_submission.py"), "--exp", "smoke_multi", "--team-name", "TeamX",
+           "--submission", str(t / "sel.csv"), "--env", str(t / "key.env"), "--out", str(t / "dist"), "--n-classes", "6",
            "--allow-todo", "--skip-install-cell"]
     # 1) a TODO declaration must be refused without --allow-todo
     r = subprocess.run([c for c in cmd if c not in ("--allow-todo",)], capture_output=True, text=True)
     assert r.returncode != 0 and "TODO" in r.stderr + r.stdout, "should refuse an unfinished declaration"
     # 2) real build
     print(subprocess.run(cmd, check=True, capture_output=True, text=True).stdout)
-    z = t / "dist" / "NeuraHack2026_TeamX_NH1.zip"
+    z = t / "dist" / "NeuraHack_Preli_TeamX.zip"
     names = sorted(zipfile.ZipFile(z).namelist()); assert names == [".env", "README.md", "notebook.ipynb", "submission.csv"], names
     # 3) run the notebook from scratch
     run = t / "run"; run.mkdir(); zipfile.ZipFile(z).extractall(run)
@@ -28,7 +28,7 @@ with tempfile.TemporaryDirectory() as t:
                           "--output", "executed.ipynb"], cwd=run, env=envv, capture_output=True, text=True)
     assert out.returncode == 0, out.stderr[-2000:]
     sub = pd.read_csv(run / "submission.csv")
-    assert list(sub.columns) == ["id", "label"] and len(sub) == 30
+    assert list(sub.columns) == ["id", "label", "techniques", "action", "confidence"] and len(sub) == 30
     # 4) a hardcoded key must be caught
     (t / "bad.env").write_text("K=" + "baseline" + "\n")  # value 'baseline' appears in the notebook
     r = subprocess.run([c if c != str(t / "key.env") else str(t / "bad.env") for c in cmd], capture_output=True, text=True)
