@@ -112,7 +112,7 @@ def main():
                      f"### Configuration used (seeds are here)\n\n```json\n{json.dumps(cfg, indent=2)}\n```\n")]
     if not a.skip_install_cell:
         pkgs = [l.strip() for l in req.read_text().splitlines() if l.strip()]
-        if any(f.get("name") in ("sbert", "labeldesc", "nli") for f in cfg.get("features", [])):
+        if any(f.get("name") in ("sbert", "labeldesc", "nli", "llm_local") for f in cfg.get("features", [])):
             pkgs.append("sentence-transformers")
         cells.append(code_cell("%pip install -q " + " ".join(pkgs)))
     dirs = sorted({str(p.relative_to(ROOT).parent) for p in src_files + cfg_files})

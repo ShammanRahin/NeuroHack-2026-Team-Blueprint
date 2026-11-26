@@ -8,6 +8,7 @@
 | intfloat/multilingual-e5-small (if `sbert` feature used) | pretrained model | Hugging Face | MIT | sentence embeddings |
 | sentence-transformers, scikit-learn, pandas, numpy, scipy, torch | libraries | PyPI | Apache-2.0 / BSD | pipeline |
 | MoritzLaurer/mDeBERTa-v3-base-xnli-multilingual-nli-2mil7 (if `nli` feature used) | pretrained model | Hugging Face | MIT | zero-shot NLI scores vs labelling-guide hypotheses |
+| Qwen/Qwen2.5-1.5B-Instruct (if `llm_local` feature used) | pretrained model | Hugging Face | Apache-2.0 | local zero-shot label/action probabilities, inference only |
 | avro.py | library | PyPI | MIT OR Apache-2.0 | Bangla <-> Banglish transliteration of real training rows |
 | Hosted LLM via OpenAI-compatible API (if `llm` feature used): provider + model = TODO | API | TODO | TODO | zero-shot label/techniques/action judgements as features; key in .env; usage logged to llm_usage.csv |
 | TODO: any other model / API you add (e.g. bge-m3: MIT; check the licence on the model card of community models) | TODO | TODO | TODO | TODO |

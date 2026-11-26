@@ -1,0 +1,11 @@
+base: preli_full
+name: preli_llm_local
+note: preli_full + local Qwen2.5-1.5B-Instruct zero-shot label/action probabilities (GPU, no API)
+features:
+  - {name: tfidf_char, params: {ngram: [2, 5], max_features: 200000}}
+  - {name: tfidf_word, params: {max_features: 50000}}
+  - {name: handcrafted, params: {weight: 1.0}}
+  - {name: sbert, params: {model: intfloat/multilingual-e5-small, prefix: "query: ", weight: 1.0}}
+  - {name: labeldesc, params: {model: intfloat/multilingual-e5-small, prefix: "query: ", weight: 1.0}}
+  - {name: nli, params: {model: MoritzLaurer/mDeBERTa-v3-base-xnli-multilingual-nli-2mil7, max_length: 128, weight: 1.0}}
+  - {name: llm_local, params: {model: Qwen/Qwen2.5-1.5B-Instruct, questions: [label, action], batch_size: 64, weight: 2.0}}
