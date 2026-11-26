@@ -16,7 +16,7 @@ _HOMOGLYPHS = str.maketrans({
     "Τ": "T", "Υ": "Y", "Χ": "X", "ν": "v", "α": "a", "ε": "e", "ι": "i", "κ": "k", "ρ": "p", "τ": "t", "υ": "u",
     "‘": "'", "’": "'", "‚": "'", "“": '"', "”": '"', "„": '"', "–": "-", "—": "-", "−": "-", "‐": "-", "‑": "-",
 })
-_REPEAT = re.compile(r"(.)\1{2,}")  # 3+ of the same char -> 2 ("hellooooo" -> "helloo")
+_REPEAT = re.compile(r"([^\W\d_])\1{2,}")  # 3+ of the same LETTER -> 2 ("hellooooo" -> "helloo"); digits kept
 
 
 def robust(text: str) -> str:

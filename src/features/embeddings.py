@@ -126,3 +126,31 @@ def sbert(bundle, model="intfloat/multilingual-e5-small", prefix="query: ", max_
 
 
 _SHARED_MEMO = {}
+
+
+# label-description similarity: same encoder + cache as `sbert`, so it costs ~nothing extra
+DESCRIPTIONS = [
+    "Legitimate genuine transaction, OTP delivery, bill, delivery update, service or personal message",
+    "MFS or OTP scam asking for PIN, OTP, password, NID, card details, or money sent by mistake to be returned",
+    "Prize or lottery scam: unearned reward, gift or cashback that needs payment, a click or details to claim",
+    "Fake job or investment: unrealistic income, recruitment fee, task-based earning, money doubling, crypto",
+    "Delivery or parcel phishing: parcel held, delivery fee, customs payment, address confirmation or tracking link",
+    "Promotional spam: marketing, sale, discount, product or app promotion, business offer",
+    "Sender impersonates a bank, mobile wallet, courier, telecom, employer or government",
+    "Request for credentials, OTP, PIN or sensitive information",
+    "Advance fee or payment request",
+    "Urgency, threat, pressure or trust-building manipulation",
+    "Request to click or open a link or website",
+    "Request to install an app, join a group or complete a task",
+    "Request to call, reply to or contact the sender",
+]
+
+
+@feature("labeldesc")
+def labeldesc(bundle, model="intfloat/multilingual-e5-small", prefix="query: ", max_seq_length=256, batch_size=128,
+              weight=1.0):
+    base = _load(model, max_seq_length)
+    enc = Encoder(base, prefix, batch_size, cache_tag=f"{model}|{max_seq_length}|{prefix}")
+    enc.memo = _SHARED_MEMO.setdefault((model, max_seq_length, prefix), {})
+    D = Encoder(base, prefix, batch_size, cache_tag=None)(DESCRIPTIONS)
+    return lambda df: weight * (enc(df[bundle.text_col].tolist()) @ D.T)

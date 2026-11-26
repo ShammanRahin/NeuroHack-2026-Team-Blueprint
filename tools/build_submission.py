@@ -112,7 +112,7 @@ def main():
                      f"### Configuration used (seeds are here)\n\n```json\n{json.dumps(cfg, indent=2)}\n```\n")]
     if not a.skip_install_cell:
         pkgs = [l.strip() for l in req.read_text().splitlines() if l.strip()]
-        if any(f.get("name") == "sbert" for f in cfg.get("features", [])):
+        if any(f.get("name") in ("sbert", "labeldesc", "nli") for f in cfg.get("features", [])):
             pkgs.append("sentence-transformers")
         cells.append(code_cell("%pip install -q " + " ".join(pkgs)))
     dirs = sorted({str(p.relative_to(ROOT).parent) for p in src_files + cfg_files})
@@ -148,7 +148,8 @@ def main():
 Features: {feats}. Model: {cfg["model"]["name"]} {cfg["model"].get("params", {})}, one head per task
 (label, action, techniques T1..T6); confidence = probability of the predicted label. Labelling-guide conventions are
 applied when decoding (classes 0/5 -> NONE and action 0). Text is de-obfuscated (NFKC, format characters, homoglyphs).
-Training data: sample.csv plus code-generated synthetic templates and seeded adversarial augmentation; nothing is
+Training data: sample.csv only, plus seeded augmentation of those real rows (corruptions, Bangla<->Banglish
+transliteration, conversation views); no synthetic messages are generated; nothing is
 fitted or trained on test text. Validation: repeated stratified group k-fold over near-duplicate groups.
 
 ## External models, datasets and resources
@@ -156,7 +157,7 @@ See the declaration section at the top of `notebook.ipynb` (libraries with versi
 API with source and licence).
 
 ## Random seeds
-seed = {cfg["seed"]} (CV folds, augmentation, synthetic data, models). Full configuration is printed in the notebook.
+seed = {cfg["seed"]} (CV folds, augmentation, models). Full configuration is printed in the notebook.
 
 ## How to run
 1. Open `notebook.ipynb` in a clean Kaggle notebook (competition data attached, GPU + internet on) or Colab.

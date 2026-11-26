@@ -15,7 +15,7 @@
 | Hand-crafted tactics | `handcrafted.py` | 66 features from the labelling guide: credential / prize / job / parcel / promo / urgency / payment / link / install / contact / organisation lexicons (EN, Banglish, Bangla), despaced matching for long keywords, URL / short-code / phone / amount patterns, conversation structure (turns, speaker markers, requests that appear only in later turns), noise-only and gibberish detection, hard-legitimate interactions (OTP + do-not-share warning, messages *about* scams). ~1.6 min / 500k rows. |
 | Sentence embeddings | `embeddings.py` | multilingual encoder, fp16, length-sorted batches, disk cache per 50k test chunk. Default `intfloat/multilingual-e5-small` (best quality/speed for Bangla in benchmarks). Swap in `kazalbrur/bangla-embed-e5-small-banglish` (Banglish-aware) or `BAAI/bge-m3` (strongest, ~5x slower). |
 | SetFit fine-tuning | `embeddings.py` (`finetune_steps`) | contrastive pair fine-tuning of the encoder per fold (SetFit body), then the classifier head. |
-| Synthetic data | `synth.py` | seeded templates written from the labelling guide: every class x EN/Banglish/Bangla, invented brands/identities, priority-order cases, hard negatives, and register wrappers (multi-turn chats with late reveals, group chats, call-style markers, formal emails, notices). |
+| ~~Synthetic data~~ | removed | ~~ seeded templates written from the labelling guide: every class x EN/Banglish/Bangla, invented brands/identities, priority-order cases, hard negatives, and register wrappers (multi-turn chats with late reveals, group chats, call-style markers, formal emails, notices). |
 | Augmentation | `augment.py` | the corruption families listed on the Data tab (insert/delete/substitute/repeat, spacing, caps, emoji, homoglyphs, zero-width, sensitive-word misspellings, noise strings) + noise-only class-0 rows. Training rows only; a corrupted copy of validation rows gives the local `robust` score. |
 
 ## Measured (grouped CV on 50 labelled sample rows; local composite = renormalised A/B/C/robust/calibration)
@@ -45,3 +45,17 @@ messages they never saw. Embedding numbers need the real encoder (run `preli_ful
 - Adversarial text normalisation: https://arxiv.org/abs/2206.04137 ; homoglyph/zero-width sanitisation: https://arxiv.org/pdf/2610.18151
 - Smishing for Bengali speakers (LLM synthetic + translated data): https://researchportal.murdoch.edu.au/esploro/outputs/graduate/A-Multilingual-Fine-Tuned-LLM-Framework-for/991005909771807891
 - EmbeddingGemma: https://arxiv.org/abs/2509.20354
+
+## Update (27 Nov, after public LB 0.739): no synthetic data
+Team decision: no generated messages. Templates removed. Added instead:
+- `zeroshot.py` `nli`: multilingual NLI (mDeBERTa-v3 xnli, 26 languages incl. Bengali) entailment scores for 16 hypotheses
+  from the labelling guide - needs no training rows, targets novel scenarios.
+- `embeddings.py` `labeldesc`: cosine similarity to 13 guide descriptions (class / technique / action).
+- `llm.py` `llm`: optional zero-shot LLM judgements (OpenAI-compatible API, key in .env, cached, usage logged).
+- augmentation of REAL rows only: corruptions, Bangla<->Banglish transliteration (avro.py), conversation views.
+- validation: shift holdouts (Bangla-script / Banglish / conversations held out) reported as `worst`; temperature
+  scaling for Task D fitted on out-of-fold predictions.
+- normaliser fix: repeated digits are no longer squashed ("50000" stayed "500" before).
+
+Local (50 sample rows, CPU features only): real rows only 0.805; + corruptions 0.801; + translit/views 0.793 - all
+within noise, so the GPU zero-shot features are what must move the score. Shift `worst` 0.56-0.58.

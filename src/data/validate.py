@@ -1,4 +1,5 @@
 """Member A's data loading, validation, and cross-validation."""
+import re
 import unicodedata
 
 import numpy as np
@@ -257,3 +258,24 @@ def validate_submission(sub, b: Bundle):
         conf = pd.to_numeric(sub["confidence"], errors="coerce")
         if conf.isna().any() or not conf.between(0, 1).all():
             raise ValueError("submission: confidence must be a number in [0, 1]")
+
+
+_BANGLISH_WORDS = re.compile(r"\b(apnar|apni|ami|amar|korun|koren|korte|din|diben|hobe|hoye|ase|ache|taka|bhai|vai|"
+                             r"theke|jonno|pathan|bolen|kore|jan|nai)\b", re.I)
+
+
+def shift_splits(texts):
+    """Distribution-shift holdouts on the labelled rows (the test set shifts language, register and wording):
+    train on everything else, validate on one slice. Returns {name: (train_idx, valid_idx)}; tiny slices skipped."""
+    t = pd.Series(list(texts)).astype(str)
+    masks = {
+        "bangla_script_out": t.str.contains(r"[ঀ-৿]"),
+        "banglish_out": ~t.str.contains(r"[ঀ-৿]") & t.map(lambda s: len(_BANGLISH_WORDS.findall(s)) >= 2),
+        "conversation_out": t.str.contains(r"\|\|\|", regex=True),
+    }
+    out = {}
+    for name, m in masks.items():
+        m = m.to_numpy()
+        if 4 <= m.sum() <= len(t) - 10:
+            out[name] = (np.flatnonzero(~m), np.flatnonzero(m))
+    return out

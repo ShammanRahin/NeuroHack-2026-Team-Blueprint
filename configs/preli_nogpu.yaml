@@ -1,7 +1,9 @@
-base: preli_full
+base: preli
 name: preli_nogpu
-note: same as preli_full without the transformer encoder (CPU-only fallback, fastest)
+note: CPU - char+word tf-idf + handcrafted; real rows + augmentation (corruptions, Bangla<->Banglish, conversation views)
 features:
   - {name: tfidf_char, params: {ngram: [2, 5], max_features: 200000}}
   - {name: tfidf_word, params: {max_features: 50000}}
   - {name: handcrafted, params: {weight: 1.0}}
+augment: {copies: 2, strength: 0.06, noise_rows: 20, translit: true, views: true, robust_eval: true}
+model: {name: logreg, params: {C: 4}}

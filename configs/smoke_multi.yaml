@@ -5,5 +5,4 @@ tasks: [label, action, techniques]
 features:
   - {name: tfidf_char, params: {ngram: [2, 5]}}
   - {name: handcrafted}
-synthetic: {n_per_class: 20}
 augment: {copies: 1, noise_rows: 10, robust_eval: true}

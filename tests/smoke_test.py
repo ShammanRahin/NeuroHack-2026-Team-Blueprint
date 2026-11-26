@@ -33,7 +33,7 @@ if __name__ == "__main__":
         assert list(sub.columns) == ["id", "label"] and len(sub) == 30
         assert (t / "log.csv").exists()
         run.main(["exp=baseline", f"data.dir={t}", "debug=true"])
-    with tempfile.TemporaryDirectory() as t:  # 4-task competition format + synthetic data + augmentation + handcrafted
+    with tempfile.TemporaryDirectory() as t:  # 4-task competition format + augmentation + handcrafted
         t = pathlib.Path(t)
         make(t, multi=True)
         os.environ.update(WORK_DIR=str(t / "work"), RESULTS_LOG=str(t / "log.csv"), EXP_USER="ci")

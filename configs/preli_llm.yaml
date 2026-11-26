@@ -1,0 +1,11 @@
+base: preli_full
+name: preli_llm
+note: preli_full + zero-shot LLM judgements (label/techniques/action) as features; needs LLM_API_KEY/LLM_MODEL/LLM_BASE_URL in .env
+features:
+  - {name: tfidf_char, params: {ngram: [2, 5], max_features: 200000}}
+  - {name: tfidf_word, params: {max_features: 50000}}
+  - {name: handcrafted, params: {weight: 1.0}}
+  - {name: sbert, params: {model: intfloat/multilingual-e5-small, prefix: "query: ", weight: 1.0}}
+  - {name: labeldesc, params: {model: intfloat/multilingual-e5-small, prefix: "query: ", weight: 1.0}}
+  - {name: nli, params: {model: MoritzLaurer/mDeBERTa-v3-base-xnli-multilingual-nli-2mil7, max_length: 128, weight: 1.0}}
+  - {name: llm, params: {batch: 25, workers: 8, weight: 2.0}}

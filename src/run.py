@@ -3,7 +3,7 @@ Identical on Kaggle, Colab and laptop.
 
 Tasks (cfg `tasks`): label (Task A), action (Task C), techniques (Task B); confidence (Task D) = max label probability.
 Leakage / rules safety:
-  * features are FIT INSIDE EVERY CV FOLD on that fold's training rows (+ synthetic + augmented copies of them only);
+  * features are FIT INSIDE EVERY CV FOLD on that fold's training rows (+ augmented copies of those real rows only);
   * test text is never used to fit anything (Kaggle Rules tab s.5); the 500k test rows are transformed in chunks;
   * validation rows stay clean; a seeded corrupted copy of them estimates the hidden robustness score."""
 import dataclasses
@@ -29,17 +29,8 @@ def _labeled_frame(b, cfg):
 
 
 def _extra_rows(cfg, b):
-    """Synthetic template rows + noise-only rows (fold-independent, seeded)."""
+    """Noise-only rows (fold-independent, seeded). No synthetic message generation."""
     d, parts = cfg["data"], []
-    s = cfg.get("synthetic") or {}
-    if s.get("n_per_class", 0) > 0:
-        from src.features import synth
-        g = synth.generate(n_per_class=s["n_per_class"], seed=cfg["seed"])
-        from src.data.normalize import robust
-        g["text"] = g["text"].map(robust)
-        parts.append(g.rename(columns={"text": b.text_col, "label": b.target_col,
-                                       "action": d.get("action_col") or "action",
-                                       "techniques": d.get("techniques_col") or "techniques"}))
     a = cfg.get("augment") or {}
     if a.get("noise_rows", 0) > 0:
         from src.features import augment
@@ -55,8 +46,12 @@ def _extra_rows(cfg, b):
 
 def _training_frame(cfg, b, rows, extra, seed):
     """Fold training rows + extra rows + corrupted copies of both (augmentation only ever sees training rows)."""
-    base = pd.concat([rows, extra], ignore_index=True)
     a = cfg.get("augment") or {}
+    base = pd.concat([rows, extra], ignore_index=True)
+    if a.get("translit") or a.get("views"):
+        from src.features import augment
+        base = pd.concat([base, augment.real_row_views(rows, b.text_col, a.get("translit", False), a.get("views", False))],
+                         ignore_index=True)
     if a.get("copies", 0) > 0:
         from src.features import augment
         base = pd.concat([base, augment.augment(base, b.text_col, a["copies"], a.get("strength", 0.06), seed)],
@@ -145,6 +140,22 @@ def _score(dec, y, tasks):
     return parts
 
 
+def _temper(P, T):
+    """Temperature-scale probabilities: p^(1/T), renormalised (argmax unchanged)."""
+    if T == 1.0:
+        return P
+    L = np.log(np.clip(P, 1e-9, 1.0)) / T
+    L -= L.max(1, keepdims=True)
+    E = np.exp(L)
+    return E / E.sum(1, keepdims=True)
+
+
+def _fit_temperature(oof, y):
+    correct = oof.argmax(1) == y
+    grid = np.exp(np.linspace(np.log(0.25), np.log(4.0), 41))
+    return float(min(grid, key=lambda T: np.mean((_temper(oof, T).max(1) - correct) ** 2)))
+
+
 def _techniques_str(T):
     return ["|".join(TECH[j] for j in np.flatnonzero(r)) or "NONE" for r in T]
 
@@ -166,16 +177,19 @@ def main(argv=None):
     M = registry.MODELS[cfg["model"]["name"]]
     make = lambda: M(seed=cfg["seed"], **cfg["model"].get("params", {}))
     robust_eval = (cfg.get("augment") or {}).get("robust_eval", True)
-    print(f"[{cfg['name']}] {len(lab)} labelled + {len(extra)} synthetic/noise rows; "
+    print(f"[{cfg['name']}] {len(lab)} labelled + {len(extra)} noise-only rows; "
           f"augment copies {(cfg.get('augment') or {}).get('copies', 0)}")
 
-    rows = []
+    rows, oof, cnt = [], np.zeros((len(lab), N_CLS)), np.zeros(len(lab))
     for i, (tr, va) in enumerate(validate.folds(cfg, y_all["label"])):
         fit = _training_frame(cfg, b, lab.iloc[tr], extra, seed=cfg["seed"] + i)
         transforms = _fit_features(cfg, b, fit)
         heads = _fit_heads(cfg, make, _transform(transforms, fit), _targets(fit, cfg, b))
         yv = {k: v[va] for k, v in y_all.items()}
-        parts = _score(_decode(_predict_heads(heads, _transform(transforms, lab.iloc[va]))), yv, cfg["tasks"])
+        Pv = _predict_heads(heads, _transform(transforms, lab.iloc[va]))
+        oof[va] += Pv["label"]
+        cnt[va] += 1
+        parts = _score(_decode(Pv), yv, cfg["tasks"])
         if robust_eval:
             from src.features import augment
             noisy = augment.augment(lab.iloc[va], b.text_col, copies=1, seed=10_000 + i)
@@ -185,6 +199,25 @@ def main(argv=None):
     comps = [metrics.local_composite(r) for r in rows]
     shown = " ".join(f"{k}={v:.4f}" for k, v in mean.items())
     print(f"[{cfg['name']}] CV local composite {np.mean(comps):.4f} +/- {np.std(comps):.4f} | {shown} ({len(rows)} folds)")
+
+    # temperature scaling for Task D (Brier of confidence vs 'label correct'), fitted on out-of-fold predictions only
+    oof /= np.maximum(cnt, 1)[:, None]
+    T = _fit_temperature(oof, y_all["label"]) if cfg.get("calibrate", True) else 1.0
+    c0 = metrics.calibration(oof.max(1), oof.argmax(1) == y_all["label"])
+    c1 = metrics.calibration(_temper(oof, T).max(1), oof.argmax(1) == y_all["label"])
+    print(f"[{cfg['name']}] temperature T={T:.2f}: OOF calibration {c0:.4f} -> {c1:.4f}")
+
+    # distribution-shift holdouts (language / register): train on the rest, score Task A on the held-out slice
+    shift = {}
+    for name, (tr, va) in validate.shift_splits(lab[b.text_col]).items():
+        fit = _training_frame(cfg, b, lab.iloc[tr], extra, seed=cfg["seed"] + 500)
+        transforms = _fit_features(cfg, b, fit)
+        heads = _fit_heads(cfg, make, _transform(transforms, fit), _targets(fit, cfg, b))
+        pred = _decode(_predict_heads(heads, _transform(transforms, lab.iloc[va])))["label"]
+        shift[name] = metrics.macro_f1(y_all["label"][va], pred)
+    if shift:
+        print(f"[{cfg['name']}] shift holdouts (Task A macro-F1): "
+              + " ".join(f"{k}={v:.3f}" for k, v in shift.items()) + f" | worst={min(shift.values()):.3f}")
 
     fit = _training_frame(cfg, b, lab, extra, seed=cfg["seed"] + 999)
     transforms = _fit_features(cfg, b, fit)
@@ -196,6 +229,7 @@ def main(argv=None):
     dt = time.time() - t0
     print(f"[{cfg['name']}] inference {len(b.test)} rows in {dt:.1f}s ({len(b.test) / max(dt, 1e-9):,.0f} rows/s, "
           f"{1000 * dt / len(b.test):.3f} ms/row)")
+    P["label"] = _temper(P["label"], T)
     dec = _decode(P)
 
     out = env.work_dir() / "outputs" / cfg["name"]
@@ -218,6 +252,7 @@ def main(argv=None):
                         cv_mean=round(float(np.mean(comps)), 4), cv_std=round(float(np.std(comps)), 4),
                         score_a=round(mean["A"], 4), score_b=round(mean["B"], 4) if "B" in mean else "",
                         score_c=round(mean["C"], 4) if "C" in mean else "", calib=round(mean["calib"], 4),
+                        shift_min=round(min(shift.values()), 4) if shift else "", temperature=round(T, 3),
                         n_folds=len(rows), note=cfg.get("note", "")))
     return float(np.mean(comps))
 

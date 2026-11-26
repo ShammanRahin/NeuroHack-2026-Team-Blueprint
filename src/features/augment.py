@@ -9,6 +9,7 @@
 Used by the runner on each CV fold's TRAINING rows only (validation rows stay clean; a separate corrupted copy of the
 validation rows estimates the robustness score)."""
 import random
+import re
 import string
 
 import numpy as np
@@ -95,3 +96,63 @@ def noise_rows(n, text_col, columns, seed=42):
     df = pd.DataFrame({c: 0 for c in columns if c != text_col}, index=range(n))
     df[text_col] = texts
     return df[columns] if set(columns) <= set(df.columns) else df
+
+
+# ------------------------------------------------------------------ transforms of REAL rows (no new content invented)
+_BANGLISH_HINT = re.compile(r"\b(apnar|apni|ami|amar|korun|koren|korte|din|diben|hobe|hoye|ase|ache|taka|bhai|vai|ki|na|ekhon|"
+                            r"theke|jonno|pathan|bolen|ta|ti|e|er|kore|jan|nai|ar|o)\b", re.I)
+_BENGALI = re.compile(r"[ঀ-৿]")
+
+
+def to_banglish(text):
+    """Bangla script -> romanised Bangla (Avro reverse transliteration); Latin parts unchanged."""
+    import avro
+    out = avro.reverse(text)
+    return _BENGALI.sub("", out)  # drop stray combining marks avro leaves behind
+
+
+def to_bangla_script(text):
+    """Banglish -> Bangla script (Avro phonetic). Only for Latin text that looks like romanised Bangla."""
+    import avro
+    return avro.parse(text)
+
+
+def transliterate_view(text):
+    """The same real message in the other script, or None if it is not Bangla / Banglish."""
+    t = str(text)
+    if _BENGALI.search(t):
+        return to_banglish(t)
+    if len(_BANGLISH_HINT.findall(t)) >= 3:
+        return to_bangla_script(t)
+    return None
+
+
+_MARKER = re.compile(r"(^|\|\|\|)\s*(\[[^\]]{1,25}\]|[A-Za-z][A-Za-z ]{0,14}:)\s*")
+
+
+def register_views(text):
+    """Same conversation, different surface: speaker markers removed / turns on separate lines / lower-case."""
+    t = str(text)
+    if "|||" not in t:
+        return [t.lower()] if t != t.lower() else []
+    no_markers = " ||| ".join(p.strip() for p in _MARKER.sub(r"\1", t).split("|||"))
+    lines = "\n".join(p.strip() for p in t.split("|||"))
+    return [v for v in {no_markers, lines, t.lower()} if v != t]
+
+
+def real_row_views(frame, text_col, translit=True, views=True):
+    """Extra rows that are re-renderings of real labelled rows (labels unchanged)."""
+    rows = []
+    for _, r in frame.iterrows():
+        cands = []
+        if translit:
+            v = transliterate_view(r[text_col])
+            if v:
+                cands.append(v)
+        if views:
+            cands += register_views(r[text_col])
+        for c in cands:
+            nr = r.copy()
+            nr[text_col] = robust(c)
+            rows.append(nr)
+    return pd.DataFrame(rows, columns=frame.columns) if rows else frame.iloc[0:0]

@@ -3,7 +3,7 @@ import csv, os, pathlib, subprocess
 from datetime import datetime, timezone
 from .config import ROOT
 
-FIELDS = ["time", "user", "platform", "exp", "cfg_hash", "git", "cv_mean", "cv_std", "score_a", "score_b", "score_c", "calib", "n_folds", "note"]
+FIELDS = ["time", "user", "platform", "exp", "cfg_hash", "git", "cv_mean", "cv_std", "score_a", "score_b", "score_c", "calib", "shift_min", "temperature", "n_folds", "note"]
 
 
 def _sh(*a):
