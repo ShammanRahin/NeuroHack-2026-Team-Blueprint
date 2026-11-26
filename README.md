@@ -18,6 +18,9 @@ python -m src.run exp=baseline model.params.C=3   # override any YAML value from
 ```
 Full setup per role: [docs/SETUP.md](docs/SETUP.md).
 
+**Shared Drive folder (cache + outputs, edit access, delete after the contest):** https://drive.google.com/drive/folders/1hB8kMuau_CtBpbR3c6CQuM_iA5o9vCcx?usp=sharing
+After opening it: Organize → Add shortcut → My Drive, or Colab can't see it.
+
 Add a feature: new file in `src/features/` + one line under `features:` in a YAML. Add a model: new file in
 `src/models/` + `model:` in a YAML. No registry to edit, so no merge conflicts.
 

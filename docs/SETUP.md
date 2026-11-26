@@ -52,7 +52,8 @@ Pull `main` into your branch regularly: `git fetch origin && git merge origin/ma
 ### 1.4 Shared Drive folder (already set up: `NeuroHack2026`)
 The team shares one Drive folder, so everyone's cached features and `outputs/<exp>/` (oof and test
 predictions) are visible to all, and C can blend B's and their own results without recomputing.
-1. Get the folder link from the team lead (it gives edit access: **never post it publicly or commit it**).
+1. Open the folder: https://drive.google.com/drive/folders/1hB8kMuau_CtBpbR3c6CQuM_iA5o9vCcx?usp=sharing
+   (edit access for anyone with the link: don't post it outside the team; it will be deleted after the contest).
 2. Open it, click the folder name at the top → **Organize → Add shortcut → My Drive**.
    Without this step Colab can't see it (shared folders live under "Shared with me", not "My Drive").
 3. The notebook already points `WORK_DIR` at `/content/drive/MyDrive/NeuroHack2026/work`.
