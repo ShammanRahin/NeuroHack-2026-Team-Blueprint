@@ -9,6 +9,9 @@ Three people, three folders, one command. Nobody edits anybody else's files.
 | C: model architecture (@adiburrahman2004, Adibur) | `src/models/` | `@model("name")` class with `fit(X, y)` / `predict_proba(X)` |
 | everyone (by PR) | `src/common/`, `configs/` | `contracts.py` documents the interfaces |
 
+## Final submission
+`python tools/build_submission.py --help`: builds the rulebook-compliant ZIP (notebook + csv + .env + README). Read `docs/RULES_SUMMARY.md` first; fill `docs/DECLARATION.md`.
+
 ## Daily loop (any machine)
 ```
 python tests/smoke_test.py                 # 5 s, must pass before every push

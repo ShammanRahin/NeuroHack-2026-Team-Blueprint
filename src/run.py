@@ -20,6 +20,7 @@ def build_features(cfg, b):
 
 
 def main(argv=None):
+    env.load_dotenv()
     cfg = config.load(sys.argv[1:] if argv is None else argv)
     registry.load_all()
     b = validate.load_clean(cfg)

@@ -3,3 +3,5 @@ __pycache__/
 /data/
 /work/
 .ipynb_checkpoints/
+.env
+dist/

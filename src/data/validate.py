@@ -59,5 +59,7 @@ def validate_submission(sub, b: Bundle):
         raise ValueError(f"columns {list(sub.columns)} != {list(b.sample_sub.columns)}")
     if len(sub) != len(b.sample_sub) or set(sub[b.id_col]) != set(b.sample_sub[b.id_col]) or sub[b.id_col].duplicated().any():
         raise ValueError("submission ids missing/extra/duplicated")
-    if sub[b.target_col].isna().any() or not set(sub[b.target_col]) <= set(b.train[b.target_col]):
-        raise ValueError("submission has invalid labels")
+    if sub[b.target_col].isna().any() or not pd.api.types.is_integer_dtype(sub[b.target_col]):
+        raise ValueError("labels must be integers (no blanks, no 2.0, no strings)")
+    if not set(sub[b.target_col]) <= set(b.train[b.target_col]):
+        raise ValueError("submission has labels not seen in training data")
