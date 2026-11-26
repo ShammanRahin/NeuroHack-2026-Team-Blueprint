@@ -1,0 +1,7 @@
+base: preli_full
+name: preli_nogpu
+note: same as preli_full without the transformer encoder (CPU-only fallback, fastest)
+features:
+  - {name: tfidf_char, params: {ngram: [2, 5], max_features: 200000}}
+  - {name: tfidf_word, params: {max_features: 50000}}
+  - {name: handcrafted, params: {weight: 1.0}}

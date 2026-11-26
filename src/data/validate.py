@@ -9,9 +9,11 @@ from sklearn.neighbors import NearestNeighbors
 
 from src.common import env
 from src.common.contracts import Bundle
+from src.data import normalize
 
 
 _CV_STATE = "_data_cv_state"
+TECHNIQUES = [f"T{i}" for i in range(1, 7)]
 _NEAR_DUPLICATE_SIMILARITY = 0.90
 _LONG_TEXT_CHARS = 2000
 _MAX_SPLIT_ATTEMPTS = 64
@@ -58,7 +60,7 @@ def _check_text(name, df, text_col):
         f"scripts {script_counts.to_dict()}, cleaned characters "
         f"min/median/p95/max {lengths.min()}/{lengths.median():g}/{lengths.quantile(.95):g}/{lengths.max()}"
     )
-    df[text_col] = cleaned
+    df[text_col] = cleaned.map(normalize.robust)  # stats above are taken BEFORE de-obfuscation
 
 
 def _check_ids(ids, name):
@@ -112,6 +114,33 @@ def _duplicate_groups(texts):
     return np.array([root(index) for index in row_to_key], dtype=int)
 
 
+def _parse_techniques(series):
+    """'T1|T2' / 'NONE' -> DataFrame of 0/1 columns T1..T6."""
+    out = pd.DataFrame(0, index=series.index, columns=TECHNIQUES, dtype=int)
+    for idx, value in series.items():
+        value = str(value).strip()
+        if value == "NONE":
+            continue
+        codes = value.split("|")
+        bad = [c for c in codes if c not in TECHNIQUES]
+        if bad:
+            raise ValueError(f"train: invalid technique codes {bad} (row {idx})")
+        out.loc[idx, codes] = 1
+    return out
+
+
+def _aux_targets(train, data):
+    aux = {}
+    if data.get("action_col"):
+        action = train[data["action_col"]]
+        if action.isna().any() or not pd.api.types.is_integer_dtype(action) or not action.between(0, 5).all():
+            raise ValueError("train: action must be integers 0..5")
+        aux["action"] = action.to_numpy()
+    if data.get("techniques_col"):
+        aux["techniques"] = _parse_techniques(train[data["techniques_col"]]).to_numpy()
+    return aux
+
+
 def _check_sample(sample, test, id_col, target_col):
     if not sample.columns.is_unique or not {id_col, target_col}.issubset(sample.columns):
         raise ValueError("sample_submission: expected unique columns including the configured id and label")
@@ -163,7 +192,7 @@ def load_clean(cfg) -> Bundle:
         test = test.head(50).reset_index(drop=True)
         sample = None
     cfg[_CV_STATE] = (train[target_col].to_numpy(copy=True), groups)
-    return Bundle(train, test, id_col, target_col, text_col, sample)
+    return Bundle(train, test, id_col, target_col, text_col, sample, aux=_aux_targets(train, data))
 
 
 def folds(cfg, y):
@@ -205,7 +234,7 @@ def folds(cfg, y):
 
 def validate_submission(sub, b: Bundle):
     """Validate the output against the sample schema when present and the actual test IDs."""
-    columns = [b.id_col, b.target_col]
+    columns = [b.id_col, b.target_col] + [c for c in ("techniques", "action", "confidence") if c in sub.columns]
     if b.sample_sub is not None:
         _check_sample(b.sample_sub, b.test, b.id_col, b.target_col)
         columns = list(b.sample_sub.columns)
@@ -215,3 +244,16 @@ def validate_submission(sub, b: Bundle):
     if set(sub[b.id_col]) != set(b.test[b.id_col]):
         raise ValueError("submission ids do not match test ids")
     _check_labels(sub[b.target_col], "submission")
+    if "techniques" in sub.columns:
+        if sub["techniques"].isna().any() or sub["techniques"].astype(str).str.strip().eq("").any():
+            raise ValueError("submission: techniques must never be blank (use NONE)")
+        for value in sub["techniques"].astype(str).unique():
+            codes = value.split("|")
+            if value != "NONE" and (not set(codes) <= set(TECHNIQUES) or "NONE" in codes):
+                raise ValueError(f"submission: invalid techniques value {value!r}")
+    if "action" in sub.columns:
+        _check_labels(sub["action"], "submission action")
+    if "confidence" in sub.columns:
+        conf = pd.to_numeric(sub["confidence"], errors="coerce")
+        if conf.isna().any() or not conf.between(0, 1).all():
+            raise ValueError("submission: confidence must be a number in [0, 1]")

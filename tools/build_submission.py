@@ -1,10 +1,14 @@
-"""Build the final NeuraHack ZIP (rulebook s.4/s.6): exactly submission.csv, notebook.ipynb, .env, README.md.
+"""Build the final NeuraHack ZIP (Kaggle Rules tab s.7/s.8): exactly submission.csv, notebook.ipynb, README.md, .env.
 
 The notebook is rebuilt from src/ + configs/ (one %%writefile cell per file, so it stays readable), starts with the
 declaration section, and runs the same pipeline. Fails loudly instead of producing a ZIP that breaks a rule.
 
-  python tools/build_submission.py --exp <config> --team-name <Name> --team-code <NHxxx> \
-      --submission <selected kaggle submission.csv> --env <.env> [--competition <slug>] [--runtime "~10 min"]
+  python tools/build_submission.py --exp preli_full --team-name <Team_Name> \
+      --submission <selected kaggle submission.csv> [--env <.env>] [--zip-name NeuraHack_Preli_<Team_Name>.zip]
+      [--competition nsucec-neurahack-2026-preliminary] [--runtime "~25 min on a T4"]
+  ZIP name: the Kaggle Rules tab says NeuraHack_Preli_<Team_Name>.zip, the PDF says NeuraHack2026_<Team>_<Code>.zip.
+  Default follows the Rules tab; pass --zip-name if the organisers' email says otherwise.
+  No --env: an EMPTY .env is included (rules: "If you use no API keys, include an empty .env file").
 """
 import argparse, importlib.metadata as md, json, pathlib, re, sys, zipfile
 import pandas as pd
@@ -44,14 +48,27 @@ def libs_table(req_file):
     return "| Library | Version used when this notebook was built |\n|---|---|\n" + "\n".join(rows)
 
 
+TECH = {f"T{i}" for i in range(1, 7)}
+
+
 def check_csv(path, n_classes):
+    """Competition format: id,label,techniques,action,confidence (legacy id,label also accepted)."""
     df = pd.read_csv(path)
-    if list(df.columns) != ["id", "label"]:
-        sys.exit(f"CSV columns must be exactly id,label (got {list(df.columns)})")
-    if df["id"].duplicated().any() or df["label"].isna().any():
-        sys.exit("CSV has duplicate ids or blank labels")
-    if not pd.api.types.is_integer_dtype(df["label"]) or not df["label"].between(0, n_classes - 1).all():
-        sys.exit(f"labels must be integers 0..{n_classes - 1}")
+    cols = list(df.columns)
+    if cols not in (["id", "label"], ["id", "label", "techniques", "action", "confidence"]):
+        sys.exit(f"CSV columns must be id,label,techniques,action,confidence (got {cols})")
+    if df["id"].duplicated().any() or df.isna().any().any():
+        sys.exit("CSV has duplicate ids or blank fields")
+    for c in [c for c in ("label", "action") if c in df]:
+        if not pd.api.types.is_integer_dtype(df[c]) or not df[c].between(0, n_classes - 1).all():
+            sys.exit(f"{c} must be integers 0..{n_classes - 1}")
+    if "techniques" in df:
+        for v in df["techniques"].astype(str).unique():
+            codes = v.split("|")
+            if v != "NONE" and (not set(codes) <= TECH):
+                sys.exit(f"invalid techniques value {v!r}")
+    if "confidence" in df and not pd.to_numeric(df["confidence"], errors="coerce").between(0, 1).all():
+        sys.exit("confidence must be numbers in [0, 1]")
     return len(df)
 
 
@@ -59,9 +76,10 @@ def main():
     a = argparse.ArgumentParser()
     a.add_argument("--exp", required=True)
     a.add_argument("--team-name", required=True)
-    a.add_argument("--team-code", required=True)
+    a.add_argument("--team-code", default="")
+    a.add_argument("--zip-name", default=None, help="default NeuraHack_Preli_<team-name>.zip (Kaggle Rules tab)")
     a.add_argument("--submission", required=True, type=pathlib.Path)
-    a.add_argument("--env", required=True, type=pathlib.Path)
+    a.add_argument("--env", default=None, type=pathlib.Path, help="omit -> an empty .env is included")
     a.add_argument("--competition", default=None, help="Kaggle slug; enables an optional data-download cell for Colab")
     a.add_argument("--runtime", default="see notebook")
     a.add_argument("--api-notes", default="See the declaration section of the notebook.")
@@ -73,13 +91,14 @@ def main():
     a = a.parse_args()
 
     for label, v in (("team name", a.team_name), ("team code", a.team_code)):
-        if not re.fullmatch(r"[A-Za-z0-9]+", v):
-            sys.exit(f"{label} must be letters/digits only (it goes into the ZIP name)")
+        if v and not re.fullmatch(r"[A-Za-z0-9_-]+", v):
+            sys.exit(f"{label} must be letters, digits, _ or - only (it goes into the ZIP name)")
     decl = a.declaration.read_text()
     if "TODO" in decl and not a.allow_todo:
         sys.exit(f"{a.declaration} still contains TODO: the declaration section is mandatory (rulebook s.6)")
-    if not a.env.exists():
-        sys.exit(f".env not found at {a.env}: the ZIP must contain it")
+    if a.env is not None and not a.env.exists():
+        sys.exit(f".env not found at {a.env}")
+    env_text = a.env.read_text() if a.env is not None else ""
     n_rows = check_csv(a.submission, a.n_classes)
 
     cfg = config.load([f"exp={a.exp}"])
@@ -92,7 +111,10 @@ def main():
     cells = [md_cell(f"# NeuraHack 2026: {a.team_name} ({a.team_code})\n\n{decl}\n\n### 1. Libraries and versions\n\n{libs_table(req)}\n\n"
                      f"### Configuration used (seeds are here)\n\n```json\n{json.dumps(cfg, indent=2)}\n```\n")]
     if not a.skip_install_cell:
-        cells.append(code_cell("%pip install -q " + " ".join(l.strip() for l in req.read_text().splitlines() if l.strip())))
+        pkgs = [l.strip() for l in req.read_text().splitlines() if l.strip()]
+        if any(f.get("name") == "sbert" for f in cfg.get("features", [])):
+            pkgs.append("sentence-transformers")
+        cells.append(code_cell("%pip install -q " + " ".join(pkgs)))
     dirs = sorted({str(p.relative_to(ROOT).parent) for p in src_files + cfg_files})
     cells.append(md_cell("## Pipeline code\nThe cells below write the project files (`src/`, `configs/`) exactly as developed, then run them."))
     cells.append(code_cell("import os\nfor d in " + repr(dirs) + ":\n    os.makedirs(d, exist_ok=True)"))
@@ -117,32 +139,47 @@ def main():
           "nbformat": 4, "nbformat_minor": 4}
     nb_text = json.dumps(nb, indent=1)
 
-    readme = f"""# {a.team_name} ({a.team_code}): reproduction guide
+    feats = ", ".join(f["name"] + (f" ({f['params']['model']})" if f.get("params", {}).get("model") else "")
+                      for f in cfg.get("features", []))
+    readme = f"""# {a.team_name}: NeuraHack 2026 preliminary (ScamShield BD)
 
-1. Open `notebook.ipynb` in a clean Kaggle notebook (competition data attached) or Colab, internet on.
-2. Put `.env` in the same folder as the notebook (the working directory). The notebook reads keys from it; none are hardcoded.
-   On Colab also upload the competition data to `/content/data`, or the notebook downloads it if `KAGGLE_USERNAME`/`KAGGLE_KEY` are in `.env`.
-3. Run all cells top to bottom. The last cell writes `submission.csv`.
+## Approach
+{cfg.get("note", "")}
+Features: {feats}. Model: {cfg["model"]["name"]} {cfg["model"].get("params", {})}, one head per task
+(label, action, techniques T1..T6); confidence = probability of the predicted label. Labelling-guide conventions are
+applied when decoding (classes 0/5 -> NONE and action 0). Text is de-obfuscated (NFKC, format characters, homoglyphs).
+Training data: sample.csv plus code-generated synthetic templates and seeded adversarial augmentation; nothing is
+fitted or trained on test text. Validation: repeated stratified group k-fold over near-duplicate groups.
+
+## External models, datasets and resources
+See the declaration section at the top of `notebook.ipynb` (libraries with versions, every pretrained model / dataset /
+API with source and licence).
+
+## Random seeds
+seed = {cfg["seed"]} (CV folds, augmentation, synthetic data, models). Full configuration is printed in the notebook.
+
+## How to run
+1. Open `notebook.ipynb` in a clean Kaggle notebook (competition data attached, GPU + internet on) or Colab.
+2. Put `.env` next to the notebook (empty if no API keys are used). Keys are read from the environment, never hardcoded.
+   On Colab, upload the competition CSVs to `/content/data`, or put KAGGLE_USERNAME / KAGGLE_KEY in `.env` to download them.
+3. Run all cells. The last cell writes `submission.csv` ({n_rows} rows).
 
 - Approximate runtime: {a.runtime}
 - API usage: {a.api_notes}
-- Seeds, libraries and every external resource are in the declaration section at the top of the notebook.
-- The pipeline code is `src/` + `configs/`, written by the notebook's `%%writefile` cells; it can be applied to new text without manual changes.
-- `submission.csv` ({n_rows} rows) matches our selected Kaggle submission.
 """
-    secrets = [v for l in a.env.read_text().splitlines() if "=" in l and not l.strip().startswith("#")
+    secrets = [v for l in env_text.splitlines() if "=" in l and not l.strip().startswith("#")
                for v in [l.split("=", 1)[1].strip().strip("'\"")] if len(v) >= 8]
     for v in secrets:
         if v in nb_text or v in readme:
             sys.exit("a value from .env appears inside the notebook/README: remove the hardcoded key")
 
     a.out.mkdir(parents=True, exist_ok=True)
-    zpath = a.out / f"NeuraHack2026_{a.team_name}_{a.team_code}.zip"
+    zpath = a.out / (a.zip_name or f"NeuraHack_Preli_{a.team_name}.zip")
     zpath.unlink(missing_ok=True)
     with zipfile.ZipFile(zpath, "w", zipfile.ZIP_DEFLATED) as z:
         z.write(a.submission, "submission.csv")
         z.writestr("notebook.ipynb", nb_text)
-        z.write(a.env, ".env")
+        z.writestr(".env", env_text)
         z.writestr("README.md", readme)
     names = sorted(zipfile.ZipFile(zpath).namelist())
     assert names == sorted([".env", "README.md", "notebook.ipynb", "submission.csv"]), names
