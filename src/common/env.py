@@ -16,7 +16,7 @@ def data_dir(cfg):
         return pathlib.Path(d)
     p = platform()
     if p == "kaggle":
-        hits = glob.glob(f"/kaggle/input/*/{cfg['data']['test']}")
+        hits = sorted(glob.glob(f"/kaggle/input/**/{cfg['data']['test']}", recursive=True), key=len)  # any mount depth
         if not hits:
             raise FileNotFoundError("Attach the competition data to this notebook")
         return pathlib.Path(hits[0]).parent
