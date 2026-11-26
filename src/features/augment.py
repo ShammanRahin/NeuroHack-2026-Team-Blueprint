@@ -76,7 +76,10 @@ def augment(frame, text_col, copies=2, strength=0.06, seed=42):
     parts = []
     for _ in range(copies):
         aug = frame.copy()
-        aug[text_col] = [robust(corrupt(t, rng, strength)) for t in frame[text_col]]
+        raw = [corrupt(t, rng, strength) for t in frame[text_col]]
+        aug[text_col] = [robust(t) for t in raw]
+        if text_col + "_raw" in aug.columns:
+            aug[text_col + "_raw"] = raw
         parts.append(aug)
     return pd.concat(parts, ignore_index=True)
 
@@ -154,5 +157,7 @@ def real_row_views(frame, text_col, translit=True, views=True):
         for c in cands:
             nr = r.copy()
             nr[text_col] = robust(c)
+            if text_col + "_raw" in nr.index:
+                nr[text_col + "_raw"] = c
             rows.append(nr)
     return pd.DataFrame(rows, columns=frame.columns) if rows else frame.iloc[0:0]

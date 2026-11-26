@@ -172,6 +172,9 @@ def load_clean(cfg) -> Bundle:
     print(f"[data] train: {len(train)} rows, label counts {train[target_col].value_counts().sort_index().to_dict()}")
     print(f"[data] test: {len(test)} rows")
     if text_col:
+        normalize.LEVEL = int(data.get("normalize", 1))
+        for frame in (train, test):  # keep the raw text: obfuscation itself is a signal (features/handcrafted.obfusc)
+            frame[text_col + "_raw"] = frame[text_col].fillna("").astype(str)
         _check_text("train", train, text_col)
         _check_text("test", test, text_col)
         duplicate_labels = train.groupby(text_col)[target_col].nunique()

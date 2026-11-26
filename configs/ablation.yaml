@@ -1,0 +1,82 @@
+exp: preli_nogpu
+common: []
+variants:
+- name: 00_real_rows_only
+  set:
+  - 'features=[{"name": "tfidf_char", "params": {"ngram": [2, 5], "max_features": 200000}}, {"name": "tfidf_word", "params": {"max_features": 50000}}, {"name": "handcrafted", "params": {"weight": 1.0}}]'
+  - 'augment={"robust_eval": true}'
+  - data.normalize=1
+- name: 01_+augmentation
+  set:
+  - 'features=[{"name": "tfidf_char", "params": {"ngram": [2, 5], "max_features": 200000}}, {"name": "tfidf_word", "params": {"max_features": 50000}}, {"name": "handcrafted", "params": {"weight": 1.0}}]'
+  - data.normalize=1
+- name: 02_+normaliser_v2
+  set:
+  - 'features=[{"name": "tfidf_char", "params": {"ngram": [2, 5], "max_features": 200000}}, {"name": "tfidf_word", "params": {"max_features": 50000}}, {"name": "handcrafted", "params": {"weight": 1.0}}]'
+  - data.normalize=2
+- name: 03_+obfuscation_feats
+  set:
+  - 'features=[{"name": "tfidf_char", "params": {"ngram": [2, 5], "max_features": 200000}}, {"name": "tfidf_word", "params": {"max_features": 50000}}, {"name": "handcrafted", "params": {"weight": 1.0}}, {"name": "obfusc", "params": {"weight": 1.0}}]'
+  - data.normalize=2
+- name: 04_+label_priors
+  set:
+  - 'features=[{"name": "tfidf_char", "params": {"ngram": [2, 5], "max_features": 200000}}, {"name": "tfidf_word", "params": {"max_features": 50000}}, {"name": "handcrafted", "params": {"weight": 1.0}}, {"name": "obfusc", "params": {"weight": 1.0}}]'
+  - data.normalize=2
+  - 'decode={"tech_prior_weight": 0.5, "action_prior_weight": 0.3}'
+- name: 05_+priority_order
+  set:
+  - 'features=[{"name": "tfidf_char", "params": {"ngram": [2, 5], "max_features": 200000}}, {"name": "tfidf_word", "params": {"max_features": 50000}}, {"name": "handcrafted", "params": {"weight": 1.0}}, {"name": "obfusc", "params": {"weight": 1.0}}]'
+  - data.normalize=2
+  - 'decode={"tech_prior_weight": 0.5, "action_prior_weight": 0.3, "priority_tau": 0.8}'
+- name: 06_+confidence_fix
+  set:
+  - 'features=[{"name": "tfidf_char", "params": {"ngram": [2, 5], "max_features": 200000}}, {"name": "tfidf_word", "params": {"max_features": 50000}}, {"name": "handcrafted", "params": {"weight": 1.0}}, {"name": "obfusc", "params": {"weight": 1.0}}]'
+  - data.normalize=2
+  - 'decode={"tech_prior_weight": 0.5, "action_prior_weight": 0.3, "priority_tau": 0.8, "conf_post": true, "conf_shrink": 0.8}'
+- name: 07_+noise_router
+  set:
+  - 'features=[{"name": "tfidf_char", "params": {"ngram": [2, 5], "max_features": 200000}}, {"name": "tfidf_word", "params": {"max_features": 50000}}, {"name": "handcrafted", "params": {"weight": 1.0}}, {"name": "obfusc", "params": {"weight": 1.0}}]'
+  - data.normalize=2
+  - 'decode={"tech_prior_weight": 0.5, "action_prior_weight": 0.3, "priority_tau": 0.8, "conf_post": true, "conf_shrink": 0.8, "noise_router": true}'
+- name: 08_+e5_small
+  set:
+  - 'features=[{"name": "tfidf_char", "params": {"ngram": [2, 5], "max_features": 200000}}, {"name": "tfidf_word", "params": {"max_features": 50000}}, {"name": "handcrafted", "params": {"weight": 1.0}}, {"name": "obfusc", "params": {"weight": 1.0}}, {"name": "sbert", "params": {"model": "intfloat/multilingual-e5-small", "prefix": "query: "}}]'
+  - data.normalize=2
+  - 'decode={"tech_prior_weight": 0.5, "action_prior_weight": 0.3, "priority_tau": 0.8, "conf_post": true, "conf_shrink": 0.8, "noise_router": true}'
+  gpu: true
+- name: 09_banglish_e5
+  set:
+  - 'features=[{"name": "tfidf_char", "params": {"ngram": [2, 5], "max_features": 200000}}, {"name": "tfidf_word", "params": {"max_features": 50000}}, {"name": "handcrafted", "params": {"weight": 1.0}}, {"name": "obfusc", "params": {"weight": 1.0}}, {"name": "sbert", "params": {"model": "kazalbrur/bangla-embed-e5-small-banglish", "prefix": "query: "}}]'
+  - data.normalize=2
+  - 'decode={"tech_prior_weight": 0.5, "action_prior_weight": 0.3, "priority_tau": 0.8, "conf_post": true, "conf_shrink": 0.8, "noise_router": true}'
+  gpu: true
+- name: 10_+label_desc_3lang
+  set:
+  - 'features=[{"name": "tfidf_char", "params": {"ngram": [2, 5], "max_features": 200000}}, {"name": "tfidf_word", "params": {"max_features": 50000}}, {"name": "handcrafted", "params": {"weight": 1.0}}, {"name": "obfusc", "params": {"weight": 1.0}}, {"name": "sbert", "params": {"model": "kazalbrur/bangla-embed-e5-small-banglish", "prefix": "query: "}}, {"name": "labeldesc", "params": {"model": "kazalbrur/bangla-embed-e5-small-banglish", "prefix": "query: "}}]'
+  - data.normalize=2
+  - 'decode={"tech_prior_weight": 0.5, "action_prior_weight": 0.3, "priority_tau": 0.8, "conf_post": true, "conf_shrink": 0.8, "noise_router": true}'
+  gpu: true
+- name: 11_+nli
+  set:
+  - 'features=[{"name": "tfidf_char", "params": {"ngram": [2, 5], "max_features": 200000}}, {"name": "tfidf_word", "params": {"max_features": 50000}}, {"name": "handcrafted", "params": {"weight": 1.0}}, {"name": "obfusc", "params": {"weight": 1.0}}, {"name": "sbert", "params": {"model": "kazalbrur/bangla-embed-e5-small-banglish", "prefix": "query: "}}, {"name": "labeldesc", "params": {"model": "kazalbrur/bangla-embed-e5-small-banglish", "prefix": "query: "}}, {"name": "nli", "params": {"model": "MoritzLaurer/mDeBERTa-v3-base-xnli-multilingual-nli-2mil7", "max_length": 128}}]'
+  - data.normalize=2
+  - 'decode={"tech_prior_weight": 0.5, "action_prior_weight": 0.3, "priority_tau": 0.8, "conf_post": true, "conf_shrink": 0.8, "noise_router": true}'
+  gpu: true
+- name: 12_+bge_m3
+  set:
+  - 'features=[{"name": "tfidf_char", "params": {"ngram": [2, 5], "max_features": 200000}}, {"name": "tfidf_word", "params": {"max_features": 50000}}, {"name": "handcrafted", "params": {"weight": 1.0}}, {"name": "obfusc", "params": {"weight": 1.0}}, {"name": "sbert", "params": {"model": "kazalbrur/bangla-embed-e5-small-banglish", "prefix": "query: "}}, {"name": "labeldesc", "params": {"model": "kazalbrur/bangla-embed-e5-small-banglish", "prefix": "query: "}}, {"name": "nli", "params": {"model": "MoritzLaurer/mDeBERTa-v3-base-xnli-multilingual-nli-2mil7", "max_length": 128}}, {"name": "sbert", "params": {"model": "BAAI/bge-m3", "prefix": "", "batch_size": 64}}]'
+  - data.normalize=2
+  - 'decode={"tech_prior_weight": 0.5, "action_prior_weight": 0.3, "priority_tau": 0.8, "conf_post": true, "conf_shrink": 0.8, "noise_router": true}'
+  gpu: true
+- name: 13_setfit_banglish
+  set:
+  - 'features=[{"name": "tfidf_char", "params": {"ngram": [2, 5], "max_features": 200000}}, {"name": "tfidf_word", "params": {"max_features": 50000}}, {"name": "handcrafted", "params": {"weight": 1.0}}, {"name": "obfusc", "params": {"weight": 1.0}}, {"name": "sbert", "params": {"model": "kazalbrur/bangla-embed-e5-small-banglish", "prefix": "query: ", "finetune_steps": 40}}, {"name": "labeldesc", "params": {"model": "kazalbrur/bangla-embed-e5-small-banglish", "prefix": "query: "}}, {"name": "nli", "params": {"model": "MoritzLaurer/mDeBERTa-v3-base-xnli-multilingual-nli-2mil7", "max_length": 128}}]'
+  - data.normalize=2
+  - 'decode={"tech_prior_weight": 0.5, "action_prior_weight": 0.3, "priority_tau": 0.8, "conf_post": true, "conf_shrink": 0.8, "noise_router": true}'
+  gpu: true
+- name: 14_emb_only_no_tfidf
+  set:
+  - 'features=[{"name": "handcrafted"}, {"name": "obfusc", "params": {"weight": 1.0}}, {"name": "sbert", "params": {"model": "kazalbrur/bangla-embed-e5-small-banglish", "prefix": "query: "}}, {"name": "labeldesc", "params": {"model": "kazalbrur/bangla-embed-e5-small-banglish", "prefix": "query: "}}, {"name": "nli", "params": {"model": "MoritzLaurer/mDeBERTa-v3-base-xnli-multilingual-nli-2mil7", "max_length": 128}}]'
+  - data.normalize=2
+  - 'decode={"tech_prior_weight": 0.5, "action_prior_weight": 0.3, "priority_tau": 0.8, "conf_post": true, "conf_shrink": 0.8, "noise_router": true}'
+  gpu: true

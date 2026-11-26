@@ -16,11 +16,36 @@ _HOMOGLYPHS = str.maketrans({
     "Τ": "T", "Υ": "Y", "Χ": "X", "ν": "v", "α": "a", "ε": "e", "ι": "i", "κ": "k", "ρ": "p", "τ": "t", "υ": "u",
     "‘": "'", "’": "'", "‚": "'", "“": '"', "”": '"', "„": '"', "–": "-", "—": "-", "−": "-", "‐": "-", "‑": "-",
 })
-_REPEAT = re.compile(r"([^\W\d_])\1{2,}")  # 3+ of the same LETTER -> 2 ("hellooooo" -> "helloo"); digits kept
+_REPEAT = re.compile(r"([^\W\d_xX])\1{2,}")  # masked numbers like 01XXXXXXXXX are kept intact  # 3+ of the same LETTER -> 2 ("hellooooo" -> "helloo"); digits kept
 
 
-def robust(text: str) -> str:
+LEVEL = 1  # set from cfg data.normalize by load_clean; 2 = + leet mapping and spaced-letter rejoin
+
+_LEET = str.maketrans({"0": "o", "1": "i", "3": "e", "4": "a", "5": "s", "7": "t", "@": "a", "$": "s"})
+_SPACED = re.compile(r"\b(?:[A-Za-z][\s.\-*_]){2,}[A-Za-z]\b")
+_LATIN_TOKEN = re.compile(r"\S+")
+
+
+def _leet_token(m):
+    w = m.group(0)
+    letters = sum(c.isalpha() and c.isascii() for c in w)
+    odd = sum(c in "013457@$" for c in w)
+    if letters >= 3 and 0 < odd <= 2 and not re.search(r"01[xX\d]|\d{3,}|[xX]{3,}", w):
+        return w.translate(_LEET)
+    return w
+
+
+def _homoglyph_token(m):
+    w = m.group(0)
+    return w if re.search(r"[\u0980-\u09FF]", w) else w.translate(_HOMOGLYPHS)  # never remap Bengali-script tokens
+
+
+def robust(text: str, level=None) -> str:
+    level = LEVEL if level is None else level
     text = unicodedata.normalize("NFKC", str(text))
     text = "".join(ch for ch in text if unicodedata.category(ch) != "Cf")  # zero-width, bidi marks, soft hyphen, BOM...
-    text = text.translate(_HOMOGLYPHS)
+    text = _LATIN_TOKEN.sub(_homoglyph_token, text)
+    if level >= 2:
+        text = _SPACED.sub(lambda m: re.sub(r"[\s.\-*_]", "", m.group(0)), text)
+        text = _LATIN_TOKEN.sub(_leet_token, text)
     return " ".join(_REPEAT.sub(r"\1\1", text).split())

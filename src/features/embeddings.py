@@ -129,20 +129,47 @@ _SHARED_MEMO = {}
 
 
 # label-description similarity: same encoder + cache as `sbert`, so it costs ~nothing extra
+# each prototype = mean of an English, a Banglish and a Bangla-script description (written from the labelling guide)
 DESCRIPTIONS = [
-    "Legitimate genuine transaction, OTP delivery, bill, delivery update, service or personal message",
-    "MFS or OTP scam asking for PIN, OTP, password, NID, card details, or money sent by mistake to be returned",
-    "Prize or lottery scam: unearned reward, gift or cashback that needs payment, a click or details to claim",
-    "Fake job or investment: unrealistic income, recruitment fee, task-based earning, money doubling, crypto",
-    "Delivery or parcel phishing: parcel held, delivery fee, customs payment, address confirmation or tracking link",
-    "Promotional spam: marketing, sale, discount, product or app promotion, business offer",
-    "Sender impersonates a bank, mobile wallet, courier, telecom, employer or government",
-    "Request for credentials, OTP, PIN or sensitive information",
-    "Advance fee or payment request",
-    "Urgency, threat, pressure or trust-building manipulation",
-    "Request to click or open a link or website",
-    "Request to install an app, join a group or complete a task",
-    "Request to call, reply to or contact the sender",
+    ["Legitimate genuine transaction, OTP delivery, bill, delivery update, service or personal message",
+     "apnar taka joma hoyeche, bill er reminder, order deliver hobe, OTP kauke bolben na, bondhur sathe kotha",
+     "আপনার লেনদেন সফল হয়েছে, বিলের রিমাইন্ডার, অর্ডার ডেলিভারি হবে, ব্যক্তিগত কথা"],
+    ["Scam asking for PIN, OTP, password, NID or card details, or asking to return money sent by mistake",
+     "apnar PIN ba OTP ta din, NID pathan, bhul kore taka chole gese ferot din",
+     "আপনার পিন বা ওটিপি দিন, এনআইডি পাঠান, ভুল করে টাকা চলে গেছে ফেরত দিন"],
+    ["Prize or lottery scam: you won a prize, gift or cashback, pay a fee or click to claim it",
+     "apni lottery te jitechen, gift ba cashback pete fee din ba link e click korun",
+     "আপনি লটারি জিতেছেন, উপহার বা ক্যাশব্যাক পেতে ফি দিন বা লিংকে ক্লিক করুন"],
+    ["Fake job or investment: earn money from home, task income, registration fee, double your money, crypto",
+     "ghore bose income korun, task kore taka, registration fee din, taka double, invest korun",
+     "ঘরে বসে আয় করুন, কাজ করে টাকা, রেজিস্ট্রেশন ফি দিন, টাকা দ্বিগুণ, বিনিয়োগ করুন"],
+    ["Parcel or delivery phishing: parcel held, pay delivery or customs fee, confirm address at a link",
+     "apnar parcel atke ase, delivery charge ba customs fee din, link e address confirm korun",
+     "আপনার পার্সেল আটকে আছে, ডেলিভারি চার্জ বা কাস্টমস ফি দিন, লিংকে ঠিকানা নিশ্চিত করুন"],
+    ["Promotional advertisement: sale, discount, offer, new product or app promotion",
+     "offer! sob item e discount, notun product, app install kore chhar pan",
+     "অফার! সব পণ্যে ছাড়, নতুন পণ্য, অ্যাপে বিশেষ ছাড়"],
+    ["Sender claims to be a bank, mobile wallet, courier, telecom, employer or government",
+     "ami bKash ba bank theke bolchi, courier office, sarkari office",
+     "আমি বিকাশ বা ব্যাংক থেকে বলছি, কুরিয়ার অফিস, সরকারি অফিস"],
+    ["Request for credentials, OTP, PIN or sensitive personal information",
+     "OTP, PIN, password ba NID number din",
+     "ওটিপি, পিন, পাসওয়ার্ড বা এনআইডি নম্বর দিন"],
+    ["Request to pay an advance fee or send money first",
+     "age fee ba charge pathan, tarpor paben",
+     "আগে ফি বা চার্জ পাঠান, তারপর পাবেন"],
+    ["Urgency, threat or pressure: act now or the account will be blocked",
+     "ekhoni korun, na hole account band hoye jabe, 1 ghontar moddhe",
+     "এখনই করুন, না হলে অ্যাকাউন্ট বন্ধ হয়ে যাবে, ১ ঘণ্টার মধ্যে"],
+    ["Request to click or open a link or website",
+     "ei link e click korun, website e jan",
+     "এই লিংকে ক্লিক করুন, ওয়েবসাইটে যান"],
+    ["Request to install an app, join a group or do a task",
+     "app download korun, telegram ba whatsapp group e join korun",
+     "অ্যাপ ডাউনলোড করুন, টেলিগ্রাম বা হোয়াটসঅ্যাপ গ্রুপে যোগ দিন"],
+    ["Request to call, reply to or contact the sender",
+     "ei number e call korun, reply din, inbox korun",
+     "এই নম্বরে কল করুন, উত্তর দিন, যোগাযোগ করুন"],
 ]
 
 
@@ -152,5 +179,8 @@ def labeldesc(bundle, model="intfloat/multilingual-e5-small", prefix="query: ", 
     base = _load(model, max_seq_length)
     enc = Encoder(base, prefix, batch_size, cache_tag=f"{model}|{max_seq_length}|{prefix}")
     enc.memo = _SHARED_MEMO.setdefault((model, max_seq_length, prefix), {})
-    D = Encoder(base, prefix, batch_size, cache_tag=None)(DESCRIPTIONS)
+    flat = [t for group in DESCRIPTIONS for t in group]
+    E = Encoder(base, prefix, batch_size, cache_tag=None)(flat).reshape(len(DESCRIPTIONS), -1, base.get_sentence_embedding_dimension())
+    D = E.mean(1)
+    D /= np.linalg.norm(D, axis=1, keepdims=True)
     return lambda df: weight * (enc(df[bundle.text_col].tolist()) @ D.T)

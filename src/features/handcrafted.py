@@ -145,3 +145,53 @@ FEATURE_NAMES = None  # filled lazily for inspection
 def handcrafted(bundle, weight=1.0):
     scaler = MaxAbsScaler().fit(compute(bundle.train[bundle.text_col]))  # train rows only
     return lambda df: (weight * scaler.transform(compute(df[bundle.text_col]))).astype(np.float32)
+
+
+# ------------------------------------------------------------------ noise-only router + raw obfuscation features
+_VOCAB = {w.strip() for words in LEX.values() for w in words for w in w.split()} | set(
+    "the a an to you your is are for of and in on with this that it be have has will can please call sms ok hi hello "
+    "thanks dear sir madam bhai apu ami apni tumi amar apnar ki na hobe ache ase kore korun din den taka tk "
+    "valo bhalo kemon achen ekhon pore abar".split())
+
+
+def noise_only(text):
+    """True only when several signals agree that a record carries no meaningful content (Data tab: such records
+    are label 0 / NONE / 0). Conservative on purpose: Banglish must not be swallowed."""
+    t = str(text).lower()
+    if re.search(r"[ঀ-৿]", t) or re.search(r"\d|hxxp|http|www|\[\.\]|৳", t):
+        return False
+    toks = re.findall(r"[a-z]+", t)
+    if not toks:
+        return bool(t.strip())                       # only symbols / emoji
+    if any(w in _VOCAB for w in toks):
+        return False
+    gib = [w for w in toks if len(w) >= 4 and (not re.search(r"[aeiouy]", w) or re.search(r"[bcdfghjklmnpqrstvwxz]{4,}", w))]
+    return len(gib) >= max(1, len(toks) // 2) and len(toks) <= 8
+
+
+_ZW = re.compile("[​‌‍⁠﻿­]")
+_CYR = re.compile(r"[Ѐ-ӿͰ-Ͽ]")
+_EMO = re.compile(r"[\U0001F300-\U0001FAFF☀-➿]")
+
+
+def obfuscation(raw: pd.Series) -> np.ndarray:
+    raw = raw.fillna("").astype(str)
+    n = raw.str.len().clip(lower=1)
+    cols = {
+        "zw_n": np.log1p(raw.str.count(_ZW)),
+        "lookalike_n": np.log1p(raw.str.count(_CYR)),
+        "mixed_tok": np.log1p(raw.map(lambda s: sum(1 for w in s.split() if _CYR.search(w) and re.search(r"[A-Za-z]", w)))),
+        "upper_frac": raw.str.count(r"[A-Z]") / n,
+        "max_run": np.log1p(raw.map(lambda s: max((len(m.group(0)) for m in re.finditer(r"(.)\1*", s)), default=0))),
+        "emoji_n": np.log1p(raw.str.count(_EMO)),
+        "spaced_letters": np.log1p(raw.str.count(r"\b(?:[A-Za-z][\s.\-*_]){2,}[A-Za-z]\b")),
+        "noise_only": raw.map(noise_only).astype(float),
+    }
+    return pd.DataFrame(cols).to_numpy(dtype=np.float32)
+
+
+@feature("obfusc")
+def obfusc(bundle, weight=1.0):
+    col = bundle.text_col + "_raw" if bundle.text_col + "_raw" in bundle.train.columns else bundle.text_col
+    scaler = MaxAbsScaler().fit(obfuscation(bundle.train[col]))
+    return lambda df: (weight * scaler.transform(obfuscation(df[col if col in df.columns else bundle.text_col]))).astype(np.float32)

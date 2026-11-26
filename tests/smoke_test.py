@@ -28,7 +28,7 @@ if __name__ == "__main__":
         make(t)
         os.environ.update(WORK_DIR=str(t / "work"), RESULTS_LOG=str(t / "log.csv"), EXP_USER="ci")
         s = run.main(["exp=baseline", f"data.dir={t}"])
-        assert s > 0.9, f"baseline should solve the synthetic task, got {s}"
+        assert s["composite"] > 0.9, f"baseline should solve the toy task, got {s}"
         sub = pd.read_csv(t / "work/outputs/baseline/submission.csv")
         assert list(sub.columns) == ["id", "label"] and len(sub) == 30
         assert (t / "log.csv").exists()
