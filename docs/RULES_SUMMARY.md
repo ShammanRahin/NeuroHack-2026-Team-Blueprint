@@ -1,6 +1,13 @@
 # Rulebook v1.3: what matters for us
 Full text: `docs/NeuraHack_2026_Rulebook_v1.3.pdf`. This page is a working summary, not a replacement.
 
+> **CONFLICT, read this first.** The PDF rulebook (v1.3) allows pseudo-labelling on `test.csv`, but the competition's own
+> **Rules tab on Kaggle prohibits using test text for training in any form** (pseudo-labelling, self-training, label
+> propagation, clustering-based labelling, domain adaptation). The Kaggle Rules tab is the authority here. **Never train or
+> fit anything on test text**, including TF-IDF vocabularies, scalers and clustering. Fit on `sample.csv` only; transform test.
+> Also: the Rules tab names the ZIP `NeuraHack_Preli_<Team_Name>.zip` while the PDF says `NeuraHack2026_<Team_Name>_<Team_Code>.zip`.
+> Check the organizers' email and use what it says.
+
 ## Dates (BST, UTC+6)
 | When | What |
 |---|---|
@@ -24,13 +31,14 @@ and API with source/licence; method and validation strategy; seeds and reproduct
 ## Allowed
 Any AI tool and coding assistant; open-source pretrained models (XLM-R, mBERT, BanglaBERT, multilingual
 embeddings); hosted LLM APIs for training, labelling, generation, augmentation, features and inference **if the calls
-are made by code in the notebook and declared**; public external datasets if declared; pseudo-labelling /
-domain adaptation on the unlabelled `test.csv` text **if done by code, using only model predictions, and declared**.
+are made by code in the notebook and declared**; public external datasets if declared; (~~pseudo-labelling / domain adaptation on `test.csv`~~:
+**prohibited by the Kaggle Rules tab, see the conflict note above**).
 
 ## Prohibited (disqualification)
 - Recovering / looking up test labels any way except model predictions.
 - **Hand labelling or hand editing test predictions, including pasting answers from a chat window into a file.**
   Every prediction and every piece of generated training data must come from code in the notebook.
+- **Any training, fitting or labelling that uses test text** (Kaggle Rules tab, section 5).
 - Hardcoded predictions or a manually created label file.
 - Sharing code/data/predictions/keys privately with other teams.
 - More than one account per person, or more than one team per person.
