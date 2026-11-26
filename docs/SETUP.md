@@ -6,8 +6,8 @@ Read **Part 0** (team lead, once), **Part 1** (everyone), then only **your own r
 ## Part 0: Team lead, once (about 15 min)
 
 1. **GitHub:** create a *private* repo. Push the scaffold to `main`.
-2. **Invite** both teammates (Settings → Collaborators, Write access).
-3. **Fix `CODEOWNERS`:** replace the three `@member-...` placeholders with real GitHub usernames; commit.
+2. **Collaborators:** Mahdi and Adibur are already added with Write access.
+3. **`CODEOWNERS`:** done (Mahdi owns data, Shanto features, Adibur models). Update it if roles change.
 4. **Protect `main`** (Settings → Branches → Add rule for `main`): require a pull request, require the
    `smoke` check to pass. Nobody pushes straight to `main`.
 5. **Kaggle:** everyone joins the competition with the email used for registration; the leader creates the
@@ -61,7 +61,7 @@ Rules: experiment names must be unique (the name is the output folder). Don't de
 the folder by hand; if something looks stale, ask in the team chat.
 
 ---
-## Part 2A: Member A, data validation (owns `src/data/`)
+## Part 2A: Member A, data validation: Mahdi Rahman, @Berserker268 (owns `src/data/`)
 
 You are the gatekeeper. Nothing bad passes you, and nothing invalid is ever uploaded.
 
@@ -88,7 +88,7 @@ adapt `load_clean` for the new files, tell B and C the schema, and run the smoke
 If the metric differs from macro-F1, change `src/common/metrics.py` (shared file: say so in the team chat).
 
 ---
-## Part 2B: Member B, feature engineering (owns `src/features/`)
+## Part 2B: Member B, feature engineering: Samman Rahin Shanto, @ShammanRahin (owns `src/features/`)
 
 You turn cleaned data into a matrix. **Contract:** return one matrix with **train rows first, then test rows**
 (`n_train + n_test` rows), dense or scipy-sparse.
@@ -129,7 +129,7 @@ features:
   such as TF-IDF is what the baseline already does; check the rules before doing anything fancier.
 
 ---
-## Part 2C: Member C, model architecture (owns `src/models/`)
+## Part 2C: Member C, model architecture: Adibur Rahman, @adiburrahman2004 (owns `src/models/`)
 
 You turn a matrix into probabilities. **Contract:** a class with `__init__(seed, **params)`, `fit(X, y)`,
 `predict_proba(X)` returning `(n, n_classes)` with columns in sorted class-label order.

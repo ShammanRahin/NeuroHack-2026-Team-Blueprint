@@ -1,6 +1,6 @@
-# Replace with the real GitHub usernames. Each folder has ONE owner.
-/src/data/      @member-a-data
-/src/features/  @member-b-features
-/src/models/    @member-c-models
-/src/common/    @member-a-data @member-b-features @member-c-models
-/configs/       @member-a-data @member-b-features @member-c-models
+# Each folder has ONE owner. Shared files need all three.
+/src/data/      @Berserker268
+/src/features/  @ShammanRahin
+/src/models/    @adiburrahman2004
+/src/common/    @Berserker268 @ShammanRahin @adiburrahman2004
+/configs/       @Berserker268 @ShammanRahin @adiburrahman2004

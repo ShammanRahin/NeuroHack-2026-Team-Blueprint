@@ -4,9 +4,9 @@ Three people, three folders, one command. Nobody edits anybody else's files.
 
 | Who | Owns | Contract |
 |---|---|---|
-| A: data validation | `src/data/` | `load_clean(cfg) -> Bundle`, `folds()`, `validate_submission()` |
-| B: feature engineering | `src/features/` | `@feature("name")` returns a matrix, **train rows first, then test rows** |
-| C: model architecture | `src/models/` | `@model("name")` class with `fit(X, y)` / `predict_proba(X)` |
+| A: data validation (@Berserker268, Mahdi) | `src/data/` | `load_clean(cfg) -> Bundle`, `folds()`, `validate_submission()` |
+| B: feature engineering (@ShammanRahin, Shanto) | `src/features/` | `@feature("name")` returns a matrix, **train rows first, then test rows** |
+| C: model architecture (@adiburrahman2004, Adibur) | `src/models/` | `@model("name")` class with `fit(X, y)` / `predict_proba(X)` |
 | everyone (by PR) | `src/common/`, `configs/` | `contracts.py` documents the interfaces |
 
 ## Daily loop (any machine)
