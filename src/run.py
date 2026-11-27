@@ -31,7 +31,7 @@ def _labeled_frame(b, cfg):
 
 
 def _extra_rows(cfg, b):
-    """Noise-only rows (fold-independent, seeded). No synthetic message generation."""
+    """Noise-only rows + synthetic labelled messages (fold-independent, seeded, training-only)."""
     d, parts = cfg["data"], []
     a = cfg.get("augment") or {}
     if a.get("noise_rows", 0) > 0:
@@ -42,6 +42,17 @@ def _extra_rows(cfg, b):
         if d.get("techniques_col"):
             nr[d["techniques_col"]] = "NONE"
         parts.append(nr)
+    syn = d.get("synthetic") or {}
+    if syn.get("n", 0) > 0:  # code-generated labelled messages (src/data/synth_data.py), training-only, never validated on
+        from src.data import synth_data, normalize
+        g = synth_data.generate(syn["n"], seed=syn.get("seed", cfg["seed"]))
+        sd = pd.DataFrame({b.text_col: [normalize.robust(t) for t in g["text"]], b.target_col: g["label"]})
+        sd[b.text_col + "_raw"] = g["text"]
+        if d.get("action_col"):
+            sd[d["action_col"]] = g["action"]
+        if d.get("techniques_col"):
+            sd[d["techniques_col"]] = g["techniques"]
+        parts.append(sd)
     cols = _labeled_frame(b, cfg).columns
     for p in parts:
         if b.text_col + "_raw" in cols and b.text_col + "_raw" not in p.columns:
@@ -232,65 +243,86 @@ def main(argv=None):
     print(f"[{cfg['name']}] {len(lab)} labelled + {len(extra)} noise-only rows; "
           f"augment copies {(cfg.get('augment') or {}).get('copies', 0)}")
 
-    rows, oof_all, oof_pri, cnt = [], {}, [], np.zeros(len(lab))
-    for i, (tr, va) in enumerate(validate.folds(cfg, y_all["label"])):
-        fit = _training_frame(cfg, b, lab.iloc[tr], extra, seed=cfg["seed"] + i)
-        transforms = _fit_features(cfg, b, fit)
-        ft = _targets(fit, cfg, b)
-        pri = _priors(ft)
-        heads = _fit_heads(cfg, make, _transform(transforms, fit), ft)
-        yv = {k: v[va] for k, v in y_all.items()}
-        Pv = _predict_heads(heads, _transform(transforms, lab.iloc[va]))
-        for k in Pv:
-            oof_all.setdefault(k, np.zeros((len(lab), Pv[k].shape[1])))[va] += Pv[k]
-        oof_pri.append(pri)
-        cnt[va] += 1
-        parts = _score(_decode(Pv, cfg, pri, lab[b.text_col].iloc[va].tolist()), yv, cfg["tasks"])
-        if robust_eval:
-            from src.features import augment
-            noisy = augment.augment(lab.iloc[va], b.text_col, copies=1, seed=10_000 + i)
-            parts["robust"] = metrics.macro_f1(yv["label"], _decode(_predict_heads(heads, _transform(transforms, noisy)),
-                                                                    cfg, pri, noisy[b.text_col].tolist())["label"])
-        rows.append(parts)
-    mean = {k: float(np.mean([r[k] for r in rows])) for k in rows[0]}
-    comps = [metrics.local_composite(r) for r in rows]
-    shown = " ".join(f"{k}={v:.4f}" for k, v in mean.items())
-    print(f"[{cfg['name']}] CV local composite {np.mean(comps):.4f} +/- {np.std(comps):.4f} | {shown} ({len(rows)} folds)")
-
-    # Task D: temperature fitted on out-of-fold label probabilities; then the full decoder (priority order, router,
-    # confidence of the submitted label, shrink toward OOF accuracy) is scored on OOF -> calib_final
-    oof = {k: v / np.maximum(cnt, 1)[:, None] for k, v in oof_all.items()}
-    T = _fit_temperature(oof["label"], y_all["label"]) if cfg.get("calibrate", True) else 1.0
-    oofT = dict(oof, label=_temper(oof["label"], T))
-    pri_avg = {k: np.mean([p[k] for p in oof_pri], 0) for k in oof_pri[0]} if oof_pri else {}
-    texts_lab = lab[b.text_col].tolist()
-    dec0 = _decode(oofT, cfg, pri_avg, texts_lab)
-    acc_oof = float(np.mean(dec0["label"] == y_all["label"]))
-    decf = _decode(oofT, cfg, pri_avg, texts_lab, acc_oof=acc_oof)
-    calib_final = metrics.calibration(decf["confidence"], decf["label"] == y_all["label"])
-    print(f"[{cfg['name']}] temperature T={T:.2f}, OOF acc {acc_oof:.3f}, final-decoder OOF calibration {calib_final:.4f}")
-    mean_final = dict(mean, calib=calib_final)
-    composite = metrics.local_composite(mean_final)
-
-    # distribution-shift holdouts (language / register): train on the rest, score Task A on the held-out slice
-    shift = {}
-    for name, (tr, va) in validate.shift_splits(lab[b.text_col]).items():
-        fit = _training_frame(cfg, b, lab.iloc[tr], extra, seed=cfg["seed"] + 500)
+    if cfg.get("synth_holdout", True) and len(extra) > len(lab):
+        # honest check: train ONLY on synthetic + noise rows (and their augmented copies), score all real labelled rows
+        fit = _training_frame(cfg, b, lab.iloc[:0], extra, seed=cfg["seed"] + 77)
         transforms = _fit_features(cfg, b, fit)
         ft = _targets(fit, cfg, b)
         heads = _fit_heads(cfg, make, _transform(transforms, fit), ft)
-        pred = _decode(_predict_heads(heads, _transform(transforms, lab.iloc[va])), cfg, _priors(ft),
-                       lab[b.text_col].iloc[va].tolist())["label"]
-        shift[name] = metrics.macro_f1(y_all["label"][va], pred)
-    if shift:
-        print(f"[{cfg['name']}] shift holdouts (Task A macro-F1): "
-              + " ".join(f"{k}={v:.3f}" for k, v in shift.items()) + f" | worst={min(shift.values()):.3f}")
+        sp_ = _score(_decode(_predict_heads(heads, _transform(transforms, lab)), cfg, _priors(ft),
+                             lab[b.text_col].tolist()), y_all, cfg["tasks"])
+        print(f"[{cfg['name']}] SYNTH->REAL composite~{metrics.local_composite(dict(sp_, robust=sp_['A'])):.4f} | "
+              + " ".join(f"{k}={v:.4f}" for k, v in sp_.items()))
+        if cfg.get("synth_holdout_only"):
+            return sp_
 
-    result = {"exp": cfg["name"], "composite": composite, "composite_std": float(np.std(comps)),
-              "shift_worst": min(shift.values()) if shift else float("nan"), "T": T, **mean_final,
-              **{f"shift_{k}": v for k, v in shift.items()}}
-    print(f"[{cfg['name']}] RESULT " + " ".join(f"{k}={v:.4f}" if isinstance(v, float) else f"{k}={v}"
-                                                for k, v in result.items()))
+    if cfg.get("skip_cv") and len(extra) > len(lab):
+        # large synthetic training set: the synthetic->real score above is the validation; no per-fold refits
+        comps = [metrics.local_composite(dict(sp_, robust=sp_["A"]))]
+        composite, mean, calib_final, shift, rows, T, acc_oof = comps[0], dict(sp_), sp_["calib"], {}, [], 1.0, None
+        result = {"exp": cfg["name"], "composite": composite, "synth_to_real": True, **mean}
+        print(f"[{cfg['name']}] RESULT " + " ".join(f"{k}={v:.4f}" if isinstance(v, float) else f"{k}={v}"
+                                                    for k, v in result.items()))
+    else:
+        rows, oof_all, oof_pri, cnt = [], {}, [], np.zeros(len(lab))
+        for i, (tr, va) in enumerate(validate.folds(cfg, y_all["label"])):
+            fit = _training_frame(cfg, b, lab.iloc[tr], extra, seed=cfg["seed"] + i)
+            transforms = _fit_features(cfg, b, fit)
+            ft = _targets(fit, cfg, b)
+            pri = _priors(ft)
+            heads = _fit_heads(cfg, make, _transform(transforms, fit), ft)
+            yv = {k: v[va] for k, v in y_all.items()}
+            Pv = _predict_heads(heads, _transform(transforms, lab.iloc[va]))
+            for k in Pv:
+                oof_all.setdefault(k, np.zeros((len(lab), Pv[k].shape[1])))[va] += Pv[k]
+            oof_pri.append(pri)
+            cnt[va] += 1
+            parts = _score(_decode(Pv, cfg, pri, lab[b.text_col].iloc[va].tolist()), yv, cfg["tasks"])
+            if robust_eval:
+                from src.features import augment
+                noisy = augment.augment(lab.iloc[va], b.text_col, copies=1, seed=10_000 + i)
+                parts["robust"] = metrics.macro_f1(yv["label"], _decode(_predict_heads(heads, _transform(transforms, noisy)),
+                                                                        cfg, pri, noisy[b.text_col].tolist())["label"])
+            rows.append(parts)
+        mean = {k: float(np.mean([r[k] for r in rows])) for k in rows[0]}
+        comps = [metrics.local_composite(r) for r in rows]
+        shown = " ".join(f"{k}={v:.4f}" for k, v in mean.items())
+        print(f"[{cfg['name']}] CV local composite {np.mean(comps):.4f} +/- {np.std(comps):.4f} | {shown} ({len(rows)} folds)")
+
+        # Task D: temperature fitted on out-of-fold label probabilities; then the full decoder (priority order, router,
+        # confidence of the submitted label, shrink toward OOF accuracy) is scored on OOF -> calib_final
+        oof = {k: v / np.maximum(cnt, 1)[:, None] for k, v in oof_all.items()}
+        T = _fit_temperature(oof["label"], y_all["label"]) if cfg.get("calibrate", True) else 1.0
+        oofT = dict(oof, label=_temper(oof["label"], T))
+        pri_avg = {k: np.mean([p[k] for p in oof_pri], 0) for k in oof_pri[0]} if oof_pri else {}
+        texts_lab = lab[b.text_col].tolist()
+        dec0 = _decode(oofT, cfg, pri_avg, texts_lab)
+        acc_oof = float(np.mean(dec0["label"] == y_all["label"]))
+        decf = _decode(oofT, cfg, pri_avg, texts_lab, acc_oof=acc_oof)
+        calib_final = metrics.calibration(decf["confidence"], decf["label"] == y_all["label"])
+        print(f"[{cfg['name']}] temperature T={T:.2f}, OOF acc {acc_oof:.3f}, final-decoder OOF calibration {calib_final:.4f}")
+        mean_final = dict(mean, calib=calib_final)
+        composite = metrics.local_composite(mean_final)
+
+        # distribution-shift holdouts (language / register): train on the rest, score Task A on the held-out slice
+        shift = {}
+        for name, (tr, va) in validate.shift_splits(lab[b.text_col]).items():
+            fit = _training_frame(cfg, b, lab.iloc[tr], extra, seed=cfg["seed"] + 500)
+            transforms = _fit_features(cfg, b, fit)
+            ft = _targets(fit, cfg, b)
+            heads = _fit_heads(cfg, make, _transform(transforms, fit), ft)
+            pred = _decode(_predict_heads(heads, _transform(transforms, lab.iloc[va])), cfg, _priors(ft),
+                           lab[b.text_col].iloc[va].tolist())["label"]
+            shift[name] = metrics.macro_f1(y_all["label"][va], pred)
+        if shift:
+            print(f"[{cfg['name']}] shift holdouts (Task A macro-F1): "
+                  + " ".join(f"{k}={v:.3f}" for k, v in shift.items()) + f" | worst={min(shift.values()):.3f}")
+
+        result = {"exp": cfg["name"], "composite": composite, "composite_std": float(np.std(comps)),
+                  "shift_worst": min(shift.values()) if shift else float("nan"), "T": T, **mean_final,
+                  **{f"shift_{k}": v for k, v in shift.items()}}
+        print(f"[{cfg['name']}] RESULT " + " ".join(f"{k}={v:.4f}" if isinstance(v, float) else f"{k}={v}"
+                                                    for k, v in result.items()))
     if cfg.get("cv_only"):
         return result
 
