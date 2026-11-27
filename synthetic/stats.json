@@ -1,0 +1,88 @@
+{
+  "rows": 1000000,
+  "unique_texts": 1000000,
+  "label": {
+    "0": 199898,
+    "1": 200358,
+    "2": 147652,
+    "3": 145063,
+    "4": 149644,
+    "5": 157385
+  },
+  "action": {
+    "0": 357283,
+    "1": 211359,
+    "2": 166985,
+    "3": 102109,
+    "4": 87816,
+    "5": 74448
+  },
+  "techniques_top": {
+    "NONE": 357283,
+    "T1|T2|T5": 47988,
+    "T4": 45208,
+    "T1|T2": 44207,
+    "T2|T5": 37242,
+    "T1": 37215,
+    "T6": 36421,
+    "T3|T6": 30901,
+    "T4|T5": 29060,
+    "T1|T5": 28073,
+    "T2": 28042,
+    "T3": 27790,
+    "T1|T4": 27572,
+    "T1|T3": 24588,
+    "T5|T6": 20570
+  },
+  "technique_rate": {
+    "T1": 0.3101,
+    "T2": 0.1927,
+    "T3": 0.1808,
+    "T4": 0.166,
+    "T5": 0.2614,
+    "T6": 0.1619
+  },
+  "register": {
+    "sms": 567717,
+    "conversation": 197049,
+    "email": 134948,
+    "group_chat": 61422,
+    "call": 38864
+  },
+  "lang": {
+    "english": 539067,
+    "mixed": 287024,
+    "banglish": 170668,
+    "bangla": 3241
+  },
+  "corrupted_share": 0.2977,
+  "chars": {
+    "p5": 67,
+    "median": 156,
+    "p95": 403,
+    "max": 683
+  },
+  "distinct_templates": 400,
+  "parts": [
+    {
+      "file": "ScamShieldBD_synth_1000k_part1.csv.gz",
+      "rows": 250000,
+      "mb": 18.4
+    },
+    {
+      "file": "ScamShieldBD_synth_1000k_part2.csv.gz",
+      "rows": 250000,
+      "mb": 18.5
+    },
+    {
+      "file": "ScamShieldBD_synth_1000k_part3.csv.gz",
+      "rows": 250000,
+      "mb": 18.5
+    },
+    {
+      "file": "ScamShieldBD_synth_1000k_part4.csv.gz",
+      "rows": 250000,
+      "mb": 18.4
+    }
+  ]
+}

@@ -549,7 +549,7 @@ T[4] += [
     "T3,T5|3|{S:courier} parcel {ord} will be returned today. Pay the Tk {small} redelivery charge here: {bad}",
     "T5|5|Hello, I am the delivery man for your parcel. I can't find your address, call me now at {phone}.",
     "T3|2|{S:courier} apnar parcel er COD charge baki {small} taka. {mfs} korun {phone} e, tarpor delivery.",
-    "|3|Apnar parcel er status jante ekhane click korun {bad}",
+    "|3|{S:courier} apnar parcel er status jante ekhane click korun {bad}",
     "T3|2|আপনার পার্সেলের কাস্টমস শুল্ক {fee} টাকা বাকি। পরিশোধ না করলে পার্সেল ফেরত যাবে।",
     "T5|3|{S:courier} আপনার পার্সেল ডেলিভারি ব্যর্থ হয়েছে, এখনই ঠিকানা আপডেট করুন {bad}",
 ]
@@ -812,6 +812,37 @@ L_CHAT = ["{rel}, kal {time} e ashbo, rasta te jam.", "Bhai match dekhli? ki khe
           "Bhai {amt} taka ta {day} dibo, ektu wait kor.", "Tor pathano {amt} taka paisi, thanks."]
 
 
+# ---- round 5: wider benign banks (legit vs promo vs scam boundaries are where unseen test text confuses us)
+P_BRAND += ["{shop} Bangladesh:", "New at {shop}!", "{bank} Rewards:", "{tel} Internet Offer:", "Hello from {shop},",
+            "{shop} Weekend Deal:", "Exclusive for {mfs} users:", "{shop} er pokkho theke offer:", "{tel} অফার:"]
+P_OFFER += [("en", "Get {num}GB + {num}00 minutes at Tk {small} for 30 days."), ("en", "Save Tk {small} on orders above Tk {amt}."),
+            ("en", "Free home delivery inside Dhaka this week."), ("en", "Flash sale: {prod} starting from Tk {amt}."),
+            ("en", "Admission open for the {course} winter batch."), ("en", "Book a table for two and get a free dessert."),
+            ("en", "Pay with {bank} card and get {pct}% instant discount on {prod}."), ("en", "Trade in your old {prod} and save up to Tk {amt}."),
+            ("en", "Our new branch at {area} is now open with opening-day discounts."), ("en", "Buy 2 {prod} and get 1 free."),
+            ("bl", "{num}GB internet matro {small} taka, meyad 30 din."), ("bl", "Dhaka r moddhe free home delivery ei shoptahe."),
+            ("bl", "Notun {course} batch e bhorti cholche, prothom class free."), ("bl", "Purono {prod} diye notun {prod} niye jan, chhar {amt} taka porjonto."),
+            ("bn", "{num}জিবি ইন্টারনেট মাত্র {small} টাকায়।"), ("bn", "ঢাকার ভিতরে ফ্রি হোম ডেলিভারি।"), ("bn", "{prod} কিনলে একটি ফ্রি উপহার।")]
+P_CTA += ["Order online at {ok}", "Download our app from the Play Store.", "Visit any outlet near you.", "Reply STOP to unsubscribe.",
+          "Offer for a limited time only.", "Bistarito: {ok}", "অফার সীমিত সময়ের জন্য।", "Stock shesh howar age order korun."]
+L_ORG += ["{emp} HR:", "School:", "University:", "Office:", "{area} Hospital:"]
+L_EVENT += ["Your Tk {amt} bill payment to {gov} was successful. TrxID {trx}.", "Your loan EMI of Tk {amt} is due on {date}.",
+            "Your new SIM has been activated. Welcome to {tel}!", "Your card ending {acc} was used for Tk {amt} at {shop}.",
+            "Your password was changed successfully. If this wasn't you, contact us from the official app.",
+            "Your appointment with Dr. {name} is on {day} at {time}. Please arrive 15 minutes early.",
+            "Your monthly statement is available. Never share your PIN or OTP with anyone.",
+            "Your {shop} order {ord} is packed and will be shipped {day}.", "Your refund of Tk {amt} has been processed to your original payment method.",
+            "Exam fee of Tk {amt} received. Admit card will be available from {date}.", "Your interview is confirmed for {day}, {time} at our {area} office. No fee is required.",
+            "Office picnic lottery: {name} won the first prize, a {item}. Congratulations!", "Salary for {month} has been disbursed to your account.",
+            "Apnar {month} mash er bill {amt} taka, shesh tarikh {date}.", "Apnar parcel {ord} aj deliver hobe, rider {name}.",
+            "আপনার অ্যাকাউন্টে বেতন জমা হয়েছে।", "আপনার পরীক্ষার প্রবেশপত্র {date} থেকে পাওয়া যাবে।", "আপনার পার্সেল {ord} আজ ডেলিভারি হবে।"]
+L_CHAT += ["Bhai tor bkash number ta de, taka pathabo.", "Apu, ami OTP ta keu ke dei nai, tension koro na.",
+           "Did you see the fake parcel SMS going around? Don't click those links.", "Can you send me Tk {amt} for the books? I'll return {day}.",
+           "Ami ekta lottery jitar SMS paisi, obviously fake, delete kore disi.", "Meeting room booked for {time}, bring the laptop.",
+           "Mama ajke rate dinner e ki?", "Exam er syllabus ta group e diye dio please.", "Khala, ami {area} e pouchhe gesi.",
+           "Hi, I'm outside your building. Come down when you're ready.", "Bhai, notun job e joining {day}, dua koiro.",
+           "আজকে বৃষ্টি হচ্ছে, সাবধানে এসো।", "তোমার পাঠানো টাকা পেয়েছি, ধন্যবাদ।", "আগামীকাল মিটিং দশটায়।"]
+
 def _compose_benign(rng):
     if rng.random() < 0.5:
         lang, offer = rng.choice(P_OFFER)
@@ -833,7 +864,7 @@ def _compose(rng):
     ts = {t for t in (ht, rt) if t}
     mid = (" " + rng.choice(_CONTEXT[lang])) if rng.random() < 0.35 else ""
     text, claimed = _render(f"{hook}{mid} {req}", rng)
-    if rng.random() < 0.5:
+    if rng.random() < 0.5 or (hk == 4 and not ts):  # a parcel lure always names the courier when nothing else marks it
         s, _ = _render(rng.choice(SENDER[rng.choice(_SENDER_FOR[hk])]), rng)
         text, claimed = f"{s} {text}", True
     if claimed:
@@ -902,8 +933,7 @@ def _as_conversation(text, rng, scam):
     turns = []
     if scam and rng.random() < 0.5:
         turns += [(m_s, rng.choice(_TRUST[lang])), (m_r, rng.choice(_REPLY[lang]))]
-    for _ in range(rng.choice([0, 0, 1, 1, 2, 3])):
-        a, b_ = rng.choice(_CHAT[lang])
+    for a, b_ in rng.sample(_CHAT[lang], rng.choice([0, 0, 1, 1, 2, 3])):
         turns += [(m_s, _render(a, rng)[0]), (m_r, _render(b_, rng)[0])]
     for i, s_ in enumerate(sents):
         turns.append((m_s, s_))
