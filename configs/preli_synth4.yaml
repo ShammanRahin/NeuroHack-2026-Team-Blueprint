@@ -1,5 +1,6 @@
 base: preli_synth3
 name: preli_synth4
-note: peak features + 500k synthetic rows - round 4, wider composer (hooks x requests x context), 35pc corrupted in place
+note: peak features + 160k synthetic rows - round 4, wider composer (hooks x requests x context), 35pc corrupted in place; tf-idf vocab fitted on a sample (RAM)
 data:
-  synthetic: {n: 500000, seed: 41, corrupt: 0.35}
+  synthetic: {n: 160000, seed: 41, corrupt: 0.35}
+synth_holdout_n: 25000

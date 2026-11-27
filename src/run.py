@@ -266,6 +266,9 @@ def main(argv=None):
               + " ".join(f"{k}={v:.4f}" for k, v in sp_.items()))
         if cfg.get("synth_holdout_only"):
             return sp_
+        import gc
+        del fit, transforms, ft, heads
+        gc.collect()
 
     if cfg.get("skip_cv") and len(extra) > len(lab):
         # large synthetic training set: the synthetic->real score above is the validation; no per-fold refits
