@@ -46,6 +46,12 @@ def _extra_rows(cfg, b):
     if syn.get("n", 0) > 0:  # code-generated labelled messages (src/data/synth_data.py), training-only, never validated on
         from src.data import synth_data, normalize
         g = synth_data.generate(syn["n"], seed=syn.get("seed", cfg["seed"]))
+        if syn.get("corrupt", 0) > 0:  # corrupt a share in place (cheaper than full augmented copies at this scale)
+            import random as _r
+            from src.features import augment as _aug
+            rr = _r.Random(syn.get("seed", cfg["seed"]) + 3)
+            idx = [i for i in range(len(g)) if rr.random() < syn["corrupt"]]
+            g.loc[idx, "text"] = [_aug.corrupt(g.text[i], rr, syn.get("strength", 0.06)) for i in idx]
         sd = pd.DataFrame({b.text_col: [normalize.robust(t) for t in g["text"]], b.target_col: g["label"]})
         sd[b.text_col + "_raw"] = g["text"]
         if d.get("action_col"):
@@ -70,7 +76,10 @@ def _training_frame(cfg, b, rows, extra, seed):
                          ignore_index=True)
     if a.get("copies", 0) > 0:
         from src.features import augment
-        base = pd.concat([base, augment.augment(base, b.text_col, a["copies"], a.get("strength", 0.06), seed)],
+        src_ = base if a.get("synthetic_copies", True) else base.iloc[:len(rows)]  # real rows only at large scale
+        if a.get("synthetic_copies", True) is False and (a.get("translit") or a.get("views")):
+            src_ = pd.concat([rows, base.iloc[len(rows) + len(extra):]], ignore_index=True)
+        base = pd.concat([base, augment.augment(src_, b.text_col, a["copies"], a.get("strength", 0.06), seed)],
                          ignore_index=True)
     return base
 
@@ -245,7 +254,9 @@ def main(argv=None):
 
     if cfg.get("synth_holdout", True) and len(extra) > len(lab):
         # honest check: train ONLY on synthetic + noise rows (and their augmented copies), score all real labelled rows
-        fit = _training_frame(cfg, b, lab.iloc[:0], extra, seed=cfg["seed"] + 77)
+        hn = cfg.get("synth_holdout_n", 0)
+        ex = extra.sample(hn, random_state=0) if hn and len(extra) > hn else extra
+        fit = _training_frame(cfg, b, lab.iloc[:0], ex, seed=cfg["seed"] + 77)
         transforms = _fit_features(cfg, b, fit)
         ft = _targets(fit, cfg, b)
         heads = _fit_heads(cfg, make, _transform(transforms, fit), ft)

@@ -1,0 +1,7 @@
+base: preli_synth
+name: preli_synth3
+note: peak features (Banglish e5 + label descriptions) + 300k synthetic rows - round 3, long registers, 35pc corrupted in place
+data:
+  synthetic: {n: 300000, seed: 23, corrupt: 0.35}
+augment: {copies: 1, strength: 0.06, noise_rows: 500, translit: true, views: true, robust_eval: true, synthetic_copies: false}
+synth_holdout_n: 40000
