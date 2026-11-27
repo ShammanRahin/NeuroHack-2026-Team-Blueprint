@@ -678,19 +678,38 @@ def _split_sentences(text):
     return parts if parts else [text]
 
 
+_CHAT = {"en": [("Hi, is this {name}?", "yes, who is this?"), ("How is your day going?", "good, busy with work"),
+                ("Did you see the match yesterday?", "yes it was great"), ("Are you free now?", "a bit, tell me"),
+                ("I think we met at the {area} event.", "oh maybe, I don't remember"),
+                ("Hope your family is well.", "all good, thanks"), ("It's raining a lot here.", "same here")],
+         "bl": [("Kemon achen?", "alhamdulillah valo, apni?"), ("Ki koren ekhon?", "office e achi"),
+                ("Barir sobai valo?", "ji sobai valo"), ("Kal match dekhsen?", "haan dekhsi"),
+                ("Ajke onek gorom pore", "haan, onek"), ("Chinte parsen?", "na to, ke?"),
+                ("Ami {area} theke bolchi", "accha, bolen")]}
+_MARKERS2 = _MARKERS + [("[Group] {name}:", "[Group] {name}:"), ("{name}:", "You:"), ("Them:", "Me:")]
+
+
 def _as_conversation(text, rng, scam):
+    """Multi-turn record (up to 12 messages): optional ordinary chatter first, the request may come late,
+    the scammer may use either marker (marker meaning differs between records, per the Data tab)."""
     lang = "bl" if _lang(text) != "en" else "en"
-    m_s, m_r = rng.choice(_MARKERS)
+    m_s, m_r = rng.choice(_MARKERS2)
+    m_s, m_r = _render(m_s, rng)[0], _render(m_r, rng)[0]
+    if rng.random() < 0.3:
+        m_s, m_r = m_r, m_s
     sents = _split_sentences(text)
     turns = []
-    if scam and rng.random() < 0.7:
-        turns.append((m_s, rng.choice(_TRUST[lang])))
-        turns.append((m_r, rng.choice(_REPLY[lang])))
-    for i, s in enumerate(sents):
-        turns.append((m_s, s))
+    if scam and rng.random() < 0.5:
+        turns += [(m_s, rng.choice(_TRUST[lang])), (m_r, rng.choice(_REPLY[lang]))]
+    for _ in range(rng.choice([0, 0, 1, 1, 2, 3])):
+        a, b_ = rng.choice(_CHAT[lang])
+        turns += [(m_s, _render(a, rng)[0]), (m_r, _render(b_, rng)[0])]
+    for i, s_ in enumerate(sents):
+        turns.append((m_s, s_))
         if i < len(sents) - 1 or rng.random() < 0.4:
             turns.append((m_r, rng.choice(_REPLY[lang])))
-    return " ||| ".join((f"{m} {t}" if m else t) for m, t in turns[:12])
+    turns = turns[-12:] if len(turns) > 12 else turns
+    return " ||| ".join((f"{m} {t}" if m else t) for m, t in turns)
 
 
 def _as_group_chat(text, rng):
