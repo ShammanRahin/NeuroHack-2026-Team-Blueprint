@@ -1,0 +1,18 @@
+base: preli_synth4
+name: preli_final
+note: 'FINAL - linear peak model (tf-idf + handcrafted + Banglish e5 + label descriptions, 160k synthetic) blended 50/50 with a Banglish e5-small encoder fine-tuned on the shared 1M synthetic set; 8pc of templates held out for early stopping and Task D temperature'
+encoder:
+  enabled: true
+  model: kazalbrur/bangla-embed-e5-small-banglish
+  n: 1000000
+  seed: 2026
+  holdout_share: 0.08
+  holdout_rows: 20000
+  max_len: 160
+  batch_size: 64
+  lr: 5.0e-5
+  epochs: 1.0
+  label_smoothing: 0.1
+  dropout: 0.1
+  evals: 4
+  blend_weight: 0.5

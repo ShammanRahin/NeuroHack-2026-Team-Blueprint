@@ -25,26 +25,7 @@ import sys
 import pandas as pd
 
 sys.path.insert(0, ".")
-from src.data import synth_data  # noqa: E402
-from src.features import augment  # noqa: E402
-
-REG = [("call", r"^Call transcript:"), ("email", r"^Subject:"), ("group_chat", r"\[Group\]"), ("conversation", r"\|\|\|")]
-
-
-def register(t):
-    for name, pat in REG:
-        if re.search(pat, t):
-            return name
-    return "sms"
-
-
-def lang(t):
-    bn = bool(re.search(r"[ঀ-৿]", t))
-    lat = bool(re.search(r"[A-Za-z]{3,}", t))
-    if bn and lat:
-        return "mixed"
-    return "bangla" if bn else synth_data._lang(t).replace("bl", "banglish").replace("en", "english")
-
+from src.data import synth_dataset  # noqa: E402
 
 def main():
     ap = argparse.ArgumentParser()
@@ -55,38 +36,7 @@ def main():
     a = ap.parse_args()
     os.makedirs(a.out, exist_ok=True)
 
-    target, chunks, i = int(a.n * 1.0), [], 0
-    pool = pd.DataFrame(columns=["text", "label", "techniques", "action", "tpl"])
-    while True:
-        chunks.append(synth_data.generate(300_000, seed=a.seed + 97 * i))
-        i += 1
-        pool = pd.concat(chunks, ignore_index=True).drop_duplicates("text")
-        sk = pool.text.str.lower().str.replace(r"\d+", "#", regex=True).str.replace(r"\s+", " ", regex=True)
-        kept = pool[pool.groupby(sk).cumcount() < 2]
-        print(f"[synth] batches={i} unique={len(pool):,} after skeleton cap={len(kept):,}", flush=True)
-        if len(kept) >= target * 0.99 + 20_000 or i >= 12:
-            break
-    rng = random.Random(a.seed)
-    noise_n = int(a.n * 0.01)
-    nz = augment.noise_rows(noise_n, "text", ["text", "label"], seed=a.seed)
-    noise = pd.DataFrame({"text": nz["text"], "label": 0, "techniques": "NONE", "action": 0, "tpl": "noise"})
-    df = pd.concat([kept.sample(frac=1.0, random_state=a.seed).head(a.n - noise_n), noise], ignore_index=True)
-    df = df.drop_duplicates("text").sample(frac=1.0, random_state=a.seed + 1).reset_index(drop=True)
-
-    df["corrupted"] = 0
-    idx = [k for k in range(len(df)) if df.tpl[k] != "noise" and rng.random() < 0.30]
-    df.loc[idx, "text"] = [augment.corrupt(df.text[k], rng, 0.06) for k in idx]
-    df.loc[idx, "corrupted"] = 1
-    df = df.drop_duplicates("text").reset_index(drop=True)
-    df["register"] = df.text.map(register)
-    df["lang"] = df.text.map(lang)
-    df.insert(0, "id", range(1, len(df) + 1))
-    df = df.rename(columns={"tpl": "template"})
-
-    # guide consistency checks
-    benign = df.label.isin([0, 5])
-    assert (df.loc[benign, "techniques"] == "NONE").all() and (df.loc[benign, "action"] == 0).all()
-    assert (df.loc[~benign, "techniques"] != "NONE").all() and (df.loc[~benign, "action"] > 0).all()
+    df = synth_dataset.build(a.n, a.seed)
 
     stats = {
         "rows": len(df), "unique_texts": int(df.text.nunique()),

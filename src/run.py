@@ -232,6 +232,86 @@ def _techniques_str(T):
     return ["|".join(TECH[j] for j in np.flatnonzero(r)) or "NONE" for r in T]
 
 
+# ------------------------------------------------------------------------------------------------ encoder stage
+def _encoder_stage(cfg, b, lab, y_all, P_lin, pri_full, P_hold_lin, out, multi):
+    """Fine-tune a multilingual encoder on the shared 1M synthetic set (src/data/synth_dataset.py, seed 2026), minus
+    held-out templates; blend its probabilities with the linear model's (fixed weight, chosen a priori, not tuned on
+    the leaderboard) and decode with the same labelling-guide decoder. Writes submission.csv only if all checks pass."""
+    import gc
+    from src.data import normalize, synth_dataset
+    from src.features import augment
+    from src.models import encoder
+
+    e = cfg["encoder"]
+    t0 = time.time()
+    syn = synth_dataset.build(e.get("n", 1_000_000), seed=e.get("seed", 2026), verbose=False, meta=False)
+    syn["text"] = [normalize.robust(t) for t in syn["text"]]
+    syn = syn[syn["text"].str.len() > 0].reset_index(drop=True)
+    hold = encoder.template_holdout(syn["template"].tolist(), e.get("holdout_share", 0.08))
+    tr, ho = syn[~hold].reset_index(drop=True), syn[hold].reset_index(drop=True)
+    ho = ho.sample(min(len(ho), e.get("holdout_rows", 20_000)), random_state=0).reset_index(drop=True)
+    print(f"[{cfg['name']}] encoder data: {len(tr):,} train rows, {hold.sum():,} rows from "
+          f"{syn['template'][hold].nunique()} held-out templates ({len(ho):,} scored) in {time.time() - t0:.0f}s")
+
+    def ys(frame):
+        return {"label": frame["label"].to_numpy(int), "action": frame["action"].to_numpy(int),
+                "techniques": validate._parse_techniques(frame["techniques"].reset_index(drop=True)).to_numpy()}
+    noisy = augment.augment(lab, b.text_col, copies=2, seed=4242)
+    valid = {"templates": (ho["text"].tolist(), ys(ho)),
+             "real": (lab[b.text_col].tolist(), y_all),
+             "real_noisy": (noisy[b.text_col].tolist(), _targets(noisy, cfg, b))}
+
+    def score_fn(Pv, yv):
+        parts = _score(_decode(Pv, cfg, pri_full), yv, cfg["tasks"])
+        return metrics.local_composite(dict(parts, robust=parts["A"]))
+
+    Ytr = ys(tr)
+    texts_tr = tr["text"].tolist()
+    del syn, tr
+    gc.collect()
+    probs, info = encoder.train_predict(
+        texts_tr, Ytr, valid, {"test": b.test[b.text_col].tolist(), "real": lab[b.text_col].tolist(),
+                                "templates": ho["text"].tolist()},
+        model_name=e.get("model", "kazalbrur/bangla-embed-e5-small-banglish"), max_len=e.get("max_len", 160),
+        prefix=e.get("prefix", "query: "), batch_size=e.get("batch_size", 64), lr=e.get("lr", 5e-5),
+        epochs=e.get("epochs", 1.0), label_smoothing=e.get("label_smoothing", 0.1), dropout=e.get("dropout", 0.1),
+        evals=e.get("evals", 4), seed=cfg["seed"], score_fn=score_fn,
+        max_minutes=e.get("max_minutes", 50))
+    P_enc = probs["test"]
+
+    # honest look at the blend on the 86 real rows: both members trained WITHOUT them (linear = synth-only holdout model)
+    w = float(e.get("blend_weight", 0.5))
+    blend = lambda A, B: {k: w * B[k] + (1 - w) * A[k] for k in A if k in B}
+    rep = {"encoder": score_fn(probs["real"], y_all)}
+    if P_hold_lin is not None:
+        rep["linear"] = score_fn(P_hold_lin, y_all)
+        rep["blend"] = score_fn(blend(P_hold_lin, probs["real"]), y_all)
+    print(f"[{cfg['name']}] SYNTH->REAL (86 real rows, none used to train either member): "
+          + " ".join(f"{k}={v:.4f}" for k, v in rep.items()) + f" | encoder weight {w}")
+    print(f"[{cfg['name']}] encoder on held-out templates: {score_fn(probs['templates'], valid['templates'][1]):.4f}")
+
+    P = blend(P_lin, P_enc)
+    dec = _decode(P, cfg, pri_full, b.test[b.text_col].tolist())
+    agree = float(np.mean(P_lin["label"].argmax(1) == P_enc["label"].argmax(1)))
+    print(f"[{cfg['name']}] test label agreement linear vs encoder {agree:.3f}; blended label distribution "
+          + str(np.bincount(dec["label"], minlength=N_CLS).tolist()))
+    np.savez_compressed(out / "test_proba_encoder.npz", **P_enc)
+    sub = pd.DataFrame({b.id_col: b.test[b.id_col].to_numpy(), b.target_col: dec["label"]})
+    if "techniques" in dec:
+        sub["techniques"] = _techniques_str(dec["techniques"])
+    if "action" in dec:
+        sub["action"] = dec["action"]
+    if multi or (b.sample_sub is not None and "confidence" in b.sample_sub.columns):
+        sub["confidence"] = dec["confidence"].round(6)
+    if b.sample_sub is not None:
+        sub = sub[[c for c in b.sample_sub.columns if c in sub.columns]]
+    validate.validate_submission(sub, b)
+    sub.to_csv(out / "submission.csv", index=False)
+    print(f"[{cfg['name']}] wrote BLENDED {out / 'submission.csv'} ({len(sub)} rows, validated) "
+          f"in {time.time() - t0:.0f}s for the encoder stage")
+    return sub
+
+
 # ------------------------------------------------------------------------------------------------ main
 def main(argv=None):
     env.load_dotenv()
@@ -252,6 +332,7 @@ def main(argv=None):
     print(f"[{cfg['name']}] {len(lab)} labelled + {len(extra)} noise-only rows; "
           f"augment copies {(cfg.get('augment') or {}).get('copies', 0)}")
 
+    P_hold_lin = None
     if cfg.get("synth_holdout", True) and len(extra) > len(lab):
         # honest check: train ONLY on synthetic + noise rows (and their augmented copies), score all real labelled rows
         hn = cfg.get("synth_holdout_n", 0)
@@ -260,8 +341,8 @@ def main(argv=None):
         transforms = _fit_features(cfg, b, fit)
         ft = _targets(fit, cfg, b)
         heads = _fit_heads(cfg, make, _transform(transforms, fit), ft)
-        sp_ = _score(_decode(_predict_heads(heads, _transform(transforms, lab)), cfg, _priors(ft),
-                             lab[b.text_col].tolist()), y_all, cfg["tasks"])
+        P_hold_lin = _predict_heads(heads, _transform(transforms, lab))
+        sp_ = _score(_decode(P_hold_lin, cfg, _priors(ft), lab[b.text_col].tolist()), y_all, cfg["tasks"])
         print(f"[{cfg['name']}] SYNTH->REAL composite~{metrics.local_composite(dict(sp_, robust=sp_['A'])):.4f} | "
               + " ".join(f"{k}={v:.4f}" for k, v in sp_.items()))
         if cfg.get("synth_holdout_only"):
@@ -371,6 +452,22 @@ def main(argv=None):
         validate.validate_submission(sub, b)
         sub.to_csv(out / "submission.csv", index=False)
         print(f"[{cfg['name']}] wrote {out / 'submission.csv'} ({len(sub)} rows, validated)")
+        if (cfg.get("encoder") or {}).get("enabled"):
+            sub.to_csv(out / "submission_linear.csv", index=False)  # fallback stays as submission.csv if the encoder fails
+            import gc
+            del fit, transforms, heads, chunks
+            try:
+                from src.features import embeddings as _emb
+                _emb._ENCODERS.clear()
+            except Exception:
+                pass
+            gc.collect()
+            try:
+                sub = _encoder_stage(cfg, b, lab, y_all, P, pri_full, P_hold_lin, out, multi)
+            except Exception:
+                import traceback
+                traceback.print_exc()
+                print(f"[{cfg['name']}] ENCODER STAGE FAILED -> keeping the linear-only submission.csv")
         log.append(dict(platform=env.platform(), exp=cfg["name"], cfg_hash=cfg["_hash"],
                         cv_mean=round(composite, 4), cv_std=round(float(np.std(comps)), 4),
                         score_a=round(mean["A"], 4), score_b=round(mean["B"], 4) if "B" in mean else "",
