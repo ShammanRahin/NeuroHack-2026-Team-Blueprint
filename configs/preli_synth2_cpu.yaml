@@ -1,6 +1,6 @@
 base: preli_nogpu
 name: preli_synth2_cpu
-note: CPU - char+word tf-idf + handcrafted + obfuscation, normaliser v2, label-structure decoder + 120k synthetic (round 2: compositional + code-mixed) labelled messages
+note: CPU - char+word tf-idf + handcrafted + obfuscation, normaliser v2, label-structure decoder + 120k synthetic - round 2, compositional and code-mixed - labelled messages
 features:
   - {name: tfidf_char, params: {ngram: [2, 5], max_features: 200000}}
   - {name: tfidf_word, params: {max_features: 50000}}
