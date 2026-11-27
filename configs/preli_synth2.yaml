@@ -1,0 +1,7 @@
+base: preli_peak
+name: preli_synth2
+note: peak features + 120k code-generated (round 2) synthetic labelled messages (src/data/synth_data.py; organisers allow synthetic data); validated by training on synthetic only and scoring the 86 real rows
+data:
+  synthetic: {n: 120000, seed: 11}
+augment: {copies: 1, strength: 0.06, noise_rows: 300, translit: true, views: true, robust_eval: true}
+skip_cv: true
