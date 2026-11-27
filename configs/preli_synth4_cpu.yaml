@@ -1,0 +1,6 @@
+base: preli_synth3_cpu
+name: preli_synth4_cpu
+note: CPU - tf-idf + handcrafted + obfuscation + 450k synthetic rows - round 4 wider composer; tf-idf vocab fitted on a sample (RAM)
+data:
+  synthetic: {n: 450000, seed: 43, corrupt: 0.35}
+synth_holdout_n: 30000
