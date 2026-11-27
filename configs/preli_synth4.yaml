@@ -1,0 +1,5 @@
+base: preli_synth3
+name: preli_synth4
+note: peak features + 500k synthetic rows - round 4, wider composer (hooks x requests x context), 35pc corrupted in place
+data:
+  synthetic: {n: 500000, seed: 41, corrupt: 0.35}

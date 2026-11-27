@@ -663,6 +663,124 @@ _ALLOWED = {"acct": ["cred", "cred", "cred"], 2: ["cred", "pay", "link", "join",
             3: ["cred", "pay", "pay", "join", "call", "link"], 4: ["cred", "pay", "pay", "link", "call"]}
 _SENDER_FOR = {"acct": ["mfs", "bank", "tel", "shop"], 2: ["tel", "shop", "mfs"], 3: ["emp"], 4: ["courier"]}
 
+# ---- round 4: many more hook / request phrasings (the composer produced the biggest LB gain)
+HOOK["acct"] += [
+    ("en", "Your wallet has been temporarily suspended due to unusual activity.", "T5"),
+    ("en", "We could not verify your last transaction of Tk {amt}.", ""),
+    ("en", "Your account KYC information is outdated.", ""),
+    ("en", "A login attempt from {country} was detected on your account.", "T5"),
+    ("en", "Your card has been flagged for security review.", ""),
+    ("en", "Your SIM will be deactivated because the biometric data does not match.", "T5"),
+    ("en", "Your online banking access will expire tonight.", "T5"),
+    ("en", "We are upgrading all accounts to the new security system.", ""),
+    ("en", "Your monthly allowance of Tk {amt} is waiting to be released.", ""),
+    ("en", "Your remittance of Tk {amt} from abroad is on hold.", ""),
+    ("bl", "Apnar wallet ti shamoyik bhabe bondho kora hoyeche.", "T5"),
+    ("bl", "Apnar last transaction {amt} taka verify kora jay nai.", ""),
+    ("bl", "Apnar account er KYC tottho purono hoye geche.", ""),
+    ("bl", "Apnar SIM er biometric mile nai, SIM bondho hobe.", "T5"),
+    ("bl", "Apnar bidesh theke asha {amt} taka atke ache.", ""),
+    ("bl", "Sorkari bhata {amt} taka apnar jonno barddo hoyeche.", ""),
+    ("bn", "আপনার ওয়ালেট সাময়িকভাবে স্থগিত করা হয়েছে।", "T5"),
+    ("bn", "আপনার কেওয়াইসি তথ্য হালনাগাদ করা প্রয়োজন।", ""),
+    ("bn", "বিদেশ থেকে আসা আপনার {amt} টাকা আটকে আছে।", ""),
+    ("bn", "আপনার সরকারি ভাতা {amt} টাকা অনুমোদিত হয়েছে।", ""),
+]
+HOOK[2] += [
+    ("en", "Your mobile number was picked in our monthly e-raffle.", "T4"),
+    ("en", "You have unclaimed reward points worth Tk {amt}.", "T4"),
+    ("en", "Congratulations, you are our lucky customer of the week!", "T4"),
+    ("en", "You won a {item} in the {shop} anniversary giveaway.", "T4"),
+    ("en", "A free gift hamper has been reserved in your name.", "T4"),
+    ("en", "Your SIM has won {num}GB free internet.", "T4"),
+    ("en", "You are eligible for a Tk {amt} government Eid gift.", "T4"),
+    ("en", "Our quiz winners list is out and your name is on it.", "T4"),
+    ("bl", "Apnar number monthly e-raffle e uthse.", "T4"),
+    ("bl", "Apni shoptaher lucky customer nirbachito hoyechen!", "T4"),
+    ("bl", "Apnar jonno ekta free gift hamper rakha ache.", "T4"),
+    ("bl", "Apni {shop} er anniversary giveaway te {item} jitechen.", "T4"),
+    ("bl", "Apnar SIM e {num}GB free internet jomeche.", "T4"),
+    ("bn", "অভিনন্দন, আপনি সপ্তাহের ভাগ্যবান গ্রাহক!", "T4"),
+    ("bn", "আপনার নামে একটি উপহার বক্স সংরক্ষিত আছে।", "T4"),
+    ("bn", "আপনি {amt} টাকার রিওয়ার্ড পয়েন্ট পেয়েছেন।", "T4"),
+]
+HOOK[3] += [
+    ("en", "We are hiring remote data entry operators, no experience needed.", "T6"),
+    ("en", "Earn up to Tk {big} a month by rating products online.", "T6"),
+    ("en", "Our trading group made {pct}% profit last week.", "T6"),
+    ("en", "Students can earn Tk {amt} daily in their free time.", "T6"),
+    ("en", "Work permit available for {country}, salary 1.5 lakh per month.", "T6"),
+    ("en", "Invest once and receive fixed monthly income for life.", "T6"),
+    ("en", "Simple like and share tasks pay Tk {small} each.", "T6"),
+    ("en", "You have been shortlisted for a high-paying online job.", "T6"),
+    ("bl", "Kono obhiggota chhara data entry job, mashe {amt} taka.", "T6"),
+    ("bl", "Product rating diye mashe {big} taka income.", "T6"),
+    ("bl", "Amader trading group gotoshoptahe {pct}% lav koreche.", "T6"),
+    ("bl", "Chhatro chhatrira obosore protidin {amt} taka income korte paren.", "T6"),
+    ("bl", "Ekbar invest korle protimashe nirdisto income.", "T6"),
+    ("bn", "অভিজ্ঞতা ছাড়াই ডাটা এন্ট্রি কাজ, মাসে {amt} টাকা।", "T6"),
+    ("bn", "একবার বিনিয়োগে প্রতি মাসে নিশ্চিত আয়।", "T6"),
+    ("bn", "লাইক ও শেয়ার করে প্রতিদিন আয় করুন।", "T6"),
+]
+HOOK[4] += [
+    ("en", "Your international shipment is waiting for customs clearance.", ""),
+    ("en", "Our rider could not reach you for delivery of parcel {ord}.", ""),
+    ("en", "The package addressed to you was returned to our warehouse.", ""),
+    ("en", "Your parcel {ord} has an unpaid delivery balance.", ""),
+    ("en", "Your parcel was damaged and needs re-verification.", ""),
+    ("en", "We tried to deliver your order but the address was incomplete.", ""),
+    ("bl", "Apnar bideshi parcel customs clearance er opekkhay ache.", ""),
+    ("bl", "Rider apnake parcel {ord} deliver korte pare nai.", ""),
+    ("bl", "Apnar parcel warehouse e ferot gese.", ""),
+    ("bl", "Apnar parcel er delivery charge baki ache.", ""),
+    ("bn", "আপনার পার্সেলটি গুদামে ফেরত পাঠানো হয়েছে।", ""),
+    ("bn", "আপনার পার্সেলের ডেলিভারি চার্জ বকেয়া আছে।", ""),
+    ("bn", "রাইডার আপনার পার্সেল পৌঁছে দিতে পারেননি।", ""),
+]
+REQ["cred"] += [
+    ("en", "To continue, reply with the verification code sent to your phone.", "T2", 1),
+    ("en", "Please confirm your wallet PIN so we can complete the process.", "T2", 1),
+    ("en", "Enter your card details and OTP at {bad}.", "T2", 1),
+    ("en", "Our officer will call; tell him the 6-digit code.", "T2", 1),
+    ("en", "Reply with your NID number, date of birth and PIN.", "T2", 1),
+    ("en", "Sign in at {bad} with your username and password.", "T2", 1),
+    ("bl", "Process shesh korte apnar wallet PIN ta din.", "T2", 1),
+    ("bl", "Amader officer call dibe, take OTP ta bolben.", "T2", 1),
+    ("bl", "Ei link e card number ar OTP din {bad}", "T2", 1),
+    ("bl", "NID number, jonmo tarikh ar PIN reply korun.", "T2", 1),
+    ("bn", "প্রক্রিয়া সম্পন্ন করতে আপনার পিন নম্বর দিন।", "T2", 1),
+    ("bn", "আমাদের অফিসার ফোন করবেন, তাকে ওটিপি বলবেন।", "T2", 1),
+    ("bn", "এনআইডি নম্বর ও জন্মতারিখ সহ পিন পাঠান।", "T2", 1),
+]
+REQ["pay"] += [
+    ("en", "Send a refundable deposit of Tk {fee} to {phone}.", "T3", 2),
+    ("en", "Pay the Tk {fee} service charge through {mfs} today.", "T3", 2),
+    ("en", "Clear the pending Tk {fee} via {mfs} merchant {phone}.", "T3", 2),
+    ("en", "A one-time activation fee of Tk {fee} is required.", "T3", 2),
+    ("bl", "Ferotjoggo jamanot {fee} taka pathan {phone} e.", "T3", 2),
+    ("bl", "Aj {fee} taka service charge {mfs} kore din.", "T3", 2),
+    ("bl", "Ekbar er activation fee {fee} taka lagbe.", "T3", 2),
+    ("bn", "{fee} টাকা জামানত পাঠান এই নম্বরে {phone}", "T3", 2),
+    ("bn", "আজই {fee} টাকা সার্ভিস চার্জ পরিশোধ করুন।", "T3", 2),
+]
+REQ["link"] += [("en", "Details are available at {bad}", "", 3), ("en", "Tap here to proceed: {bad}", "", 3),
+                ("en", "Open {bad} and follow the steps.", "", 3), ("bl", "Bistarito dekhte ekhane click korun {bad}", "", 3),
+                ("bl", "Link e giye step gula follow korun {bad}", "", 3), ("bn", "বিস্তারিত দেখতে এখানে চাপুন {bad}", "", 3)]
+REQ["join"] += [("en", "Install the app from {bad} to get started.", "", 4), ("en", "Join our Telegram channel for tasks: {bad}", "", 4),
+                ("en", "Add our admin on WhatsApp group via {bad}", "", 4), ("bl", "Telegram channel e join kore kaj shuru korun {bad}", "", 4),
+                ("bl", "Amader app install korun {bad}", "", 4), ("bn", "টেলিগ্রাম চ্যানেলে যোগ দিন {bad}", "", 4)]
+REQ["call"] += [("en", "Call our hotline {phone} immediately.", "", 5), ("en", "Contact our agent on imo {phone}.", "", 5),
+                ("en", "Give a missed call to {phone} and we will call back.", "", 5), ("bl", "Ekhoni {phone} e call din.", "", 5),
+                ("bl", "Imo te jogajog korun {phone}", "", 5), ("bn", "এখনই কল করুন {phone}", "", 5)]
+REQ["info"] += [("en", "Send your name, address and phone number to receive it.", "", 1),
+                ("bl", "Pete apnar nam, thikana ar phone number pathan.", "", 1)]
+_CONTEXT = {"en": ["This offer is only for selected customers.", "Your reference number is {trx}.",
+                   "This is an official notification.", "Many customers have already completed this step.",
+                   "Please do not share this message with others.", "We apologise for the inconvenience."],
+            "bl": ["Ei shujog shudhu nirbachito grahokder jonno.", "Apnar reference number {trx}.",
+                   "Eta official notification.", "Onek grahok already ei kaj shesh korechen."],
+            "bn": ["এই সুযোগ শুধু নির্বাচিত গ্রাহকদের জন্য।", "আপনার রেফারেন্স নম্বর {trx}।", "এটি একটি অফিসিয়াল বার্তা।"]}
+
 
 P_BRAND = ["{shop}:", "{tel}:", "{shop} offer!", "From {shop}:", "{shop} brings you", "Dear customer,", "", "",
            "{bank} card offer:", "{shop} er pokkho theke:", "{shop} থেকে:"]
@@ -713,7 +831,8 @@ def _compose(rng):
     pool = [r for r in REQ[kind] if r[0] == lang or (lang != "en" and rng.random() < 0.15)] or REQ[kind]
     _, req, rt, act = rng.choice(pool)
     ts = {t for t in (ht, rt) if t}
-    text, claimed = _render(f"{hook} {req}", rng)
+    mid = (" " + rng.choice(_CONTEXT[lang])) if rng.random() < 0.35 else ""
+    text, claimed = _render(f"{hook}{mid} {req}", rng)
     if rng.random() < 0.5:
         s, _ = _render(rng.choice(SENDER[rng.choice(_SENDER_FOR[hk])]), rng)
         text, claimed = f"{s} {text}", True
@@ -878,7 +997,7 @@ def _code_mix(text, rng, p=0.6):
                   else m.group(0), text)
 
 
-def generate(n=4000, seed=7, mix=None, compose=0.4):
+def generate(n=4000, seed=7, mix=None, compose=0.55):
     """n labelled synthetic rows. mix = class weights (default leans legit, like a real inbox)."""
     rng = random.Random(seed)
     mix = mix or {0: 0.28, 1: 0.15, 2: 0.13, 3: 0.13, 4: 0.13, 5: 0.18}
