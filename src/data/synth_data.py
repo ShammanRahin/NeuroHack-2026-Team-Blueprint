@@ -382,6 +382,270 @@ PROMO = [
     "Your favourite {prod} is back in stock at {shop}! Limited quantity.",
 ]
 
+# ------------------------------------------------------- round 2: scenarios, brands and registers the sample lacks
+T[1] += [
+    "T2,T5|1|Your WhatsApp will be logged out on all devices. To keep it, send us the 6-digit verification code you just received.",
+    "T2|1|{S:mfs} your cashback activation is pending. Our agent will call you; tell him the OTP to activate it.",
+    "T2|1|{S:bank} upgrade your card to VISA Platinum for free. Reply with card number, expiry and the OTP.",
+    "T2|1|{S:gov} TCB family card registration open. Send NID number and the code from SMS to get your card.",
+    "T2,T5|1|Your university email password expires today. Log in at {bad} with your current password to keep access.",
+    "T2,T5|1|Dear Valued Customer, we noticed suspicious activity on your {bank} account. Please confirm your identity by replying with your internet banking user ID and password within 24 hours, otherwise access will be suspended.",
+    "T2|1|{S:mfs} apnar account Islamic account e upgrade hocche. Confirm korte OTP ta share korun.",
+    "T2,T5|1|{S:tel} apnar number Star program e select hoyeche. Benefit chalu korte PIN code ta bolen, ajkei shesh.",
+    "T2|1|Apnar Facebook page copyright violation er karone bondho hobe. Appeal korte ei form e password din {bad}",
+    "T2|1|Hajj registration confirm korte apnar NID ar {mfs} PIN pathan ei number e.",
+    "T2,T5|1|Apnar imo account onno device e login hocche. Atkate code ta amake bolen ekhoni.",
+    "T2|1|Hello sir, I am calling from {bank} card department. To stop the annual fee, please tell me the card number and the OTP.",
+    "T2|1|{S:mfs} gift points redeem korte apnar wallet PIN diye verify korun {bad}",
+    "T2,T5|1|আপনার ব্যাংক কার্ডটি ব্লক করা হয়েছে। চালু করতে কার্ড নম্বর ও সিভিভি এখনই রিপ্লাই করুন।",
+    "T2|1|আপনার হোয়াটসঅ্যাপ যাচাই করতে আপনার ফোনে আসা ৬ সংখ্যার কোডটি পাঠান।",
+    "T2|1|{S:gov} আপনার টিসিবি কার্ড চালু করতে এনআইডি নম্বর ও ওটিপি দিন।",
+    "T3,T5|2|Mama ami {name}, notun number. Bhul kore tomar {mfs} e {amt} taka chole geche, ektu ferot pathao {phone} e, khub dorkar.",
+    "T3|2|Excuse me, my son sent Tk {amt} to your number by mistake while paying school fees. Could you please return it to {phone}?",
+    "T2,T5|1|{S:mfs} your account has been selected for verification after a failed transaction. Share the code within {mins} minutes or the balance will be frozen.",
+]
+T[2] += [
+    "T4|3|World Cup prediction winner! You won Tk {amt}. Claim your prize here: {bad}",
+    "T4,T3|2|Ramadan gift hamper reserved in your name! Pay Tk {fee} delivery to receive it today.",
+    "T4|3|Government Eid gift Tk {amt} for every citizen. Claim now: {bad}",
+    "T4,T5|3|Your {num},000 reward points will expire tonight. Redeem them for cash at {bad}",
+    "T4|3|{S:shop} Golden Ticket! You are one of 100 lucky shoppers to win a {item}. Confirm here {bad}",
+    "T4|4|Ludo tournament prize Tk {amt} won! Install our app to withdraw: {bad}",
+    "T4,T3|2|Free LPG cylinder for 1000 families! Registration fee Tk {fee} only, {mfs} {phone}.",
+    "T4|1|You have won a Hajj package in the Eid lottery. Send your full name, NID copy and address to receive the documents.",
+    "T4,T5|3|Facebook 20th anniversary: you got $100 reward. Claim before midnight {bad}",
+    "T4|5|Apnar sim e {big} taka puroskar jomeche. Tulte {phone} e call korun.",
+    "T4|3|Daraz er 12.12 lucky winner apni! Gift nite link e register korun {bad}",
+    "T4,T3|2|Lottery te apnar {item} uthese. Delivery er jonno {fee} taka agrim pathan {phone}",
+    "T4|1|Ovinondon! Apni ekti {item} jitechen. Pathate apnar nam ar thikana pathan.",
+    "T4,T5|3|Apnar {mfs} e {amt} taka cashback jomeche, aj raater moddhe ei link theke tulun {bad}",
+    "T4|4|Free recharge Tk {small}! App ta install kore number din {bad}",
+    "T4,T3|2|অভিনন্দন! ঈদ লটারিতে আপনি {item_bn} জিতেছেন। ডেলিভারি চার্জ {fee} টাকা বিকাশ করুন {phone}",
+    "T4|3|আপনার রিওয়ার্ড পয়েন্ট আজ শেষ হয়ে যাবে। নগদ টাকায় নিতে লিংকে যান {bad}",
+    "T4|1|আপনি আমাদের সাপ্তাহিক ড্র-তে বিজয়ী হয়েছেন। পুরস্কার পাঠাতে আপনার নাম ও ঠিকানা লিখে রিপ্লাই দিন।",
+]
+T[3] += [
+    "T3,T6|2|Order booster task: top up Tk {amt} to unlock commission, earn {pct}% per order. Admin will add you after payment.",
+    "T6|4|Rate hotels from home, Tk {small}0 per rating, daily payout. Message our Telegram mentor to join.",
+    "T3,T6|2|Become a member of our team, invest Tk {amt} once and earn Tk {amt} every month from referrals.",
+    "T3,T6|2|Instant loan Tk {big} approved without documents! Pay Tk {fee} processing fee first via {mfs} {phone}.",
+    "T6,T5|4|AI forex robot gives {pct}% monthly profit, zero risk. Limited slots, join now {bad}",
+    "T3,T6|5|Ship crew job, salary $1,500. Work permit fee Tk {big}. 100% visa guarantee. Call {phone}",
+    "T6|4|Earn by reading books aloud! Tk {amt} per week. Download the app {bad}",
+    "T3,T6|2|Farm investment project: 30% monthly return guaranteed. Minimum Tk {amt}, send to {mfs} {phone}.",
+    "T6|4|Refer 5 friends and earn Tk {amt} daily, no work needed. Join WhatsApp group {bad}",
+    "T3,T6|2|Garments job in {country}, free food and housing. Medical and visa cost Tk {big} advance required.",
+    "T3,T6|2|Online betting agent needed, earn {pct}% commission daily. Security deposit Tk {fee} to get panel.",
+    "T6|5|Part-time online job for students, income {amt} taka weekly from mobile. Details on WhatsApp {phone}",
+    "T6|4|Daraz e product review diye protidin {amt} taka income. Telegram group e join korun {bad}",
+    "T3,T6|2|Amader company te {amt} taka invest korle protimashe {pct}% munafa, kono jhuki nei. {mfs} {phone}",
+    "T3,T6|5|{country} jete chan? Kom khoroche work visa, beton 1 lakh+. Ajkei jogajog korun {phone}",
+    "T3,T6|2|Bina obhigottay chakri! Training fee {fee} taka dile kalkei joining.",
+    "T6,T5|4|Shudhu ajker jonno! Crypto group e free join, protidin {pct}% lav {bad}",
+    "T3,T6|2|ঘরে বসে আয় করতে চাইলে আজই {fee} টাকা দিয়ে আমাদের সদস্য হোন, প্রতিদিন আয় {amt} টাকা।",
+    "T6|4|ফেসবুক পেজে লাইক দিয়ে প্রতিদিন আয় করুন। আমাদের টেলিগ্রাম গ্রুপে যোগ দিন {bad}",
+    "T3,T6|2|অল্প টাকা বিনিয়োগে মাসে ৩০% লাভ নিশ্চিত। আজই বিনিয়োগ করুন, বিকাশ {phone}",
+]
+T[4] += [
+    "|3|{S:courier} item {ord} is waiting at the post office. Please update your postal code at {bad}",
+    "T3|2|Your returned order {ord} needs reshipment. Pay Tk {small} reshipping fee: {bad}",
+    "T3,T5|2|Airport cargo: your package is held at customs. Clearance Tk {fee} must be paid today to avoid auction.",
+    "T3|2|S: Hello, your Facebook order is ready to ship ||| R: ok send it ||| S: Please send delivery charge Tk {small} in advance to {mfs} {phone} first",
+    "T3|2|{S:courier} parcel weight mismatch, extra Tk {small} due. Pay at {bad} to continue delivery.",
+    "T5|5|{S:courier} your package has been seized for verification. Call the officer at {phone} immediately.",
+    "T3|3|{S:courier} unpaid duty for shipment {ord}. Click to pay and release: {bad}",
+    "T5|3|{S:courier} last delivery attempt today. Reschedule using {bad} or the parcel goes back to sender.",
+    "T3|2|Rider bolchi, apnar parcel er delivery charge agei {mfs} kore den {phone} e, tarpor pathabo.",
+    "T5|3|{S:courier} apnar parcel er thikana mile nai. Ajker moddhe link e giye thik korun {bad}",
+    "T3|2|Bidesh theke apnar nam e parcel esheche. Customs clear korte {fee} taka {mfs} korun {phone}.",
+    "|3|{S:courier} apnar parcel track korte ekhane click korun {bad}",
+    "T3|2|ডাক বিভাগ: আপনার পার্সেলের মাশুল বাকি আছে। {small} টাকা পরিশোধ করুন এই লিংকে {bad}",
+    "T5|3|আপনার পার্সেল ফেরত পাঠানো হবে। ১২ ঘণ্টার মধ্যে ঠিকানা নিশ্চিত করুন {bad}",
+]
+LEGIT += [
+    "Dear students, the mid-term exam of CSE 220 will be held on {date} at {time}. Room numbers will be posted on the notice board. - Department Office",
+    "Subject: Leave approval. Dear {name}, your leave request for {date} has been approved. Regards, HR Department, {emp}",
+    "Call transcript: Agent: Thank you for calling {mfs} helpline. ||| You: I can't log in to my app ||| Agent: Please reinstall the app. Remember, we will never ask for your PIN or OTP. ||| You: ok thanks",
+    "[Group] {name}: Kal picnic e sobai 8 tar moddhe chole ashbe ||| [Group] {name}: bus kothay theke chharbe? ||| [Group] {name}: {area} theke",
+    "Weather alert: Cyclone signal 7 for coastal districts. Please follow instructions from local authorities.",
+    "{gov}: Your e-passport is ready. Collect it from the regional passport office with your delivery slip.",
+    "Offer letter: Congratulations {name}, you have been selected as Junior Executive at {emp}. Joining date {date}. There is no fee for joining.",
+    "Seller: Apnar order ta confirm, cash on delivery. Rider kal {time} er moddhe pouche dibe. Dhonnobad!",
+    "{bank}: Your loan installment of BDT {amt} has been received. Thank you.",
+    "Assalamu alaikum, apnar bill er receipt ta whatsapp e pathiye dilam. Kono somossa hole janaben.",
+    "{tel}: You have used 80% of your data pack. Dial *{num}{num}# to check balance.",
+    "Dear parent, school will remain closed on {date} due to national holiday. Classes resume the next day.",
+    "Bhai, ami {mfs} e {amt} taka pathalam, rent er taka. Pele janaio.",
+    "Apu kal amar exam, dua koro. Ar ammu ke bolo ami raat e call dibo.",
+    "{shop}: Your return request for order {ord} has been accepted. Refund will be processed in 5-7 days.",
+    "Team, the client meeting is postponed to {day}. Please update the slides by tonight.",
+    "আগামীকাল সকাল ১০টায় বিদ্যালয়ে অভিভাবক সভা অনুষ্ঠিত হবে। সবাইকে উপস্থিত থাকার অনুরোধ।",
+    "আপনার বিদ্যুৎ বিল {amt} টাকা পরিশোধ সফল হয়েছে। ধন্যবাদ।",
+    "Pathao: Your food from {shop} is on the way. Estimated arrival {mins} minutes.",
+    "Reminder from {bank}: never share your card PIN, CVV or OTP with anyone, even bank staff.",
+    "My cousin got a message saying he won a lottery and must pay a fee. I told him it was fake and he deleted it.",
+    "{courier}: Parcel {ord} delivered successfully. Thank you for using our service.",
+    "S: apu, apnar dress ta ready ||| R: kobe pathaben? ||| S: kal pathabo, cash on delivery ||| R: ok",
+    "{gov}: Holding tax for this year can be paid at any branch or through the official portal {ok}",
+]
+PROMO += [
+    "Pohela Boishakh special: {pct}% off on all {prod} at {shop}! Offer till {date}.",
+    "Black Friday deals are live! Save up to {pct}% on {prod}. Shop at {ok}",
+    "New branch opening in {area}! Free dessert with every {food} order this week.",
+    "Study abroad fair this {day} at {area}. Meet universities from UK, Canada and Australia. Free entry!",
+    "Introducing our new {prod} collection. Visit our showroom or order online with free delivery.",
+    "Health insurance plans starting from Tk {small}0/month. Call our hotline to know more.",
+    "{tel}: Get unlimited Facebook and YouTube for 3 days at Tk {small}. Dial *{num}*{num}#",
+    "Dear customer, our weekend buffet is back at Tk {amt} per person. Reserve your table now!",
+    "Tuition available for class 6-10, all subjects. Experienced teachers. Call {phone}",
+    "Amader {area} outlet e cholche mega sale, sob {prod} e {pct}% chhar!",
+    "Notun phone launch! Pre-order korle free earbuds. Ajkei visit korun {shop}.",
+    "শীতের নতুন কালেকশন এসেছে! সব পণ্যে {pct}% পর্যন্ত ছাড়।",
+    "Subject: Exclusive offer for you. Dear customer, enjoy {pct}% off on your next purchase at {shop}. Use code SAVE{num} at checkout. Regards, {shop} Marketing",
+]
+
+# ---------------------------------------------- compositional generator: hook + request (+ urgency) -> new combos
+# Label follows the guide's priority: a credential request makes it class 1 whatever the hook; otherwise the hook's
+# class. Techniques/action come from the parts. This creates tactic combinations no single template has.
+HOOK = {  # class -> list of (lang, text, techs)
+    "acct": [("en", "We detected a problem with your {mfs} account.", ""),
+             ("en", "Your {bank} account has been temporarily restricted.", "T5"),
+             ("en", "Your SIM registration is incomplete.", ""),
+             ("en", "A refund of Tk {amt} is waiting for you.", ""),
+             ("en", "Someone tried to log in to your account from a new device.", "T5"),
+             ("bl", "Apnar {mfs} account e somossa dekha diyeche.", ""),
+             ("bl", "Apnar account ti 24 ghontar moddhe bondho hoye jabe.", "T5"),
+             ("bl", "Apnar refund {amt} taka pending ache.", ""),
+             ("bn", "আপনার অ্যাকাউন্টে সমস্যা পাওয়া গেছে।", ""),
+             ("bn", "আপনার সিম নিবন্ধন অসম্পূর্ণ।", "")],
+    2: [("en", "Congratulations! You won Tk {big} in our lucky draw.", "T4"),
+        ("en", "You have been selected to receive a free {item}.", "T4"),
+        ("en", "Your number won the {tel} anniversary raffle.", "T4"),
+        ("en", "You earned a Tk {amt} cashback reward.", "T4"),
+        ("en", "You are today's lucky winner of a {shop} gift voucher.", "T4"),
+        ("bl", "Ovinondon! Apni {big} taka puroskar jitechen.", "T4"),
+        ("bl", "Apnar number lucky draw te {item} jitese.", "T4"),
+        ("bl", "Apni {amt} taka bonus peyechen.", "T4"),
+        ("bn", "অভিনন্দন! আপনি {big} টাকা পুরস্কার জিতেছেন।", "T4"),
+        ("bn", "আপনার নম্বরটি লটারিতে বিজয়ী হয়েছে।", "T4")],
+    3: [("en", "Work from home and earn Tk {amt} per day.", "T6"),
+        ("en", "You are selected for a part-time online job with salary Tk {amt}.", "T6"),
+        ("en", "Invest Tk {amt} and get double in {num} days.", "T6"),
+        ("en", "Our crypto plan pays {pct}% profit every week.", "T6"),
+        ("en", "Overseas job in {country} with high salary is available.", "T6"),
+        ("en", "Earn commission by completing simple online tasks.", "T6"),
+        ("bl", "Ghore bose protidin {amt} taka income korun.", "T6"),
+        ("bl", "{country} e chakri, beton {amt} taka.", "T6"),
+        ("bl", "{amt} taka invest korle {num} din e double.", "T6"),
+        ("bn", "ঘরে বসে প্রতিদিন {amt} টাকা আয় করুন।", "T6"),
+        ("bn", "বিদেশে ভালো বেতনের চাকরির সুযোগ।", "T6")],
+    4: [("en", "Your parcel {ord} is on hold at our {area} hub.", ""),
+        ("en", "We could not deliver your package today.", ""),
+        ("en", "Your shipment from {country} is held at customs.", ""),
+        ("en", "The delivery address for your parcel is incomplete.", ""),
+        ("bl", "Apnar parcel {area} hub e atke ache.", ""),
+        ("bl", "Apnar package deliver kora jayni.", ""),
+        ("bn", "আপনার পার্সেলটি কাস্টমসে আটকে আছে।", ""),
+        ("bn", "আপনার পার্সেল ডেলিভারি করা সম্ভব হয়নি।", "")],
+}
+REQ = {  # kind -> (lang, text, techs, action)
+    "cred": [("en", "Reply with your PIN and the OTP to continue.", "T2", 1),
+             ("en", "Send your card number, expiry and CVV to verify.", "T2", 1),
+             ("en", "Share the 6-digit code we sent you.", "T2", 1),
+             ("en", "Log in at {bad} with your password to confirm.", "T2", 1),
+             ("en", "Send your NID number and the verification code.", "T2", 1),
+             ("bl", "Apnar PIN ar OTP ta pathan.", "T2", 1),
+             ("bl", "Mobile e jawa code ta amader bolen.", "T2", 1),
+             ("bl", "NID number ar PIN reply korun.", "T2", 1),
+             ("bn", "আপনার পিন ও ওটিপি পাঠান।", "T2", 1),
+             ("bn", "আপনার ফোনে আসা কোডটি জানান।", "T2", 1)],
+    "pay": [("en", "Pay Tk {fee} processing fee via {mfs} to {phone}.", "T3", 2),
+            ("en", "Send Tk {fee} first to complete the process.", "T3", 2),
+            ("en", "A charge of Tk {fee} must be paid at {bad}.", "T3", 2),
+            ("bl", "{fee} taka fee {mfs} korun {phone} e.", "T3", 2),
+            ("bl", "Age {fee} taka pathan, tarpor process hobe.", "T3", 2),
+            ("bn", "{fee} টাকা ফি বিকাশ করুন {phone}", "T3", 2),
+            ("bn", "প্রথমে {fee} টাকা পাঠান।", "T3", 2)],
+    "link": [("en", "Click {bad} to continue.", "", 3), ("en", "Visit {bad} now.", "", 3),
+             ("bl", "Ei link e click korun {bad}", "", 3), ("bn", "লিংকে ক্লিক করুন {bad}", "", 3)],
+    "join": [("en", "Join our {plat} to start: {bad}", "", 4), ("en", "Download our app: {bad}", "", 4),
+             ("bl", "{plat} e join korun {bad}", "", 4), ("bl", "App ta download korun {bad}", "", 4),
+             ("bn", "আমাদের অ্যাপ ডাউনলোড করুন {bad}", "", 4)],
+    "call": [("en", "Call {phone} for details.", "", 5), ("en", "WhatsApp us at {phone}.", "", 5),
+             ("bl", "Details er jonno call korun {phone}", "", 5), ("bl", "{phone} e WhatsApp korun.", "", 5),
+             ("bn", "বিস্তারিত জানতে কল করুন {phone}", "", 5)],
+    "info": [("en", "Reply with your full name and address.", "", 1),
+             ("bl", "Apnar nam ar thikana reply korun.", "", 1), ("bn", "আপনার নাম ও ঠিকানা পাঠান।", "", 1)],
+}
+_ALLOWED = {"acct": ["cred", "cred", "cred"], 2: ["cred", "pay", "link", "join", "call", "info"],
+            3: ["cred", "pay", "pay", "join", "call", "link"], 4: ["cred", "pay", "pay", "link", "call"]}
+_SENDER_FOR = {"acct": ["mfs", "bank", "tel", "shop"], 2: ["tel", "shop", "mfs"], 3: ["emp"], 4: ["courier"]}
+
+
+P_BRAND = ["{shop}:", "{tel}:", "{shop} offer!", "From {shop}:", "{shop} brings you", "Dear customer,", "", "",
+           "{bank} card offer:", "{shop} er pokkho theke:", "{shop} থেকে:"]
+P_OFFER = [("en", "{pct}% off on all {prod}."), ("en", "Buy 1 get 1 free on {food} this weekend."),
+           ("en", "Flat Tk {small} discount on your next order."), ("en", "Free delivery on orders above Tk {amt}."),
+           ("en", "Our new {prod} collection has arrived."), ("en", "Admission going on for {course}."),
+           ("en", "{num}GB internet at only Tk {small}."), ("en", "Special Eid prices on {prod}."),
+           ("en", "0% EMI available on {prod}."), ("en", "Get {pct}% cashback when you pay with {mfs}."),
+           ("en", "Mega sale up to {pct}% off."), ("en", "Combo meal with {food} at Tk {amt}."),
+           ("bl", "Sob {prod} e {pct}% chhar."), ("bl", "{food} er sathe free drink."),
+           ("bl", "Notun {prod} collection eseche."), ("bl", "{course} e bhorti cholche."),
+           ("bn", "সব {prod} এ {pct}% ছাড়।"), ("bn", "নতুন {prod} কালেকশন এসেছে।"), ("bn", "{course} কোর্সে ভর্তি চলছে।")]
+P_CTA = ["Shop now at {ok}", "Visit our {area} outlet.", "Call {phone} to order.", "Dial *{num}*{num}# to buy.",
+         "Order from our app today.", "Limited stock!", "Offer valid till {date}.", "T&C apply.", "",
+         "Ajkei chole ashun.", "Order korte call korun {phone}", "আজই অর্ডার করুন।", "Hurry, offer ends soon!"]
+L_ORG = ["{mfs}:", "{bank}:", "{tel}:", "{shop}:", "{courier}:", "{gov}:", ""]
+L_EVENT = ["Your payment of Tk {amt} to {shop} was successful.", "Tk {amt} received from {phone}. Balance Tk {amt}.",
+           "Your bill of Tk {amt} is due on {date}.", "Your order {ord} has been confirmed.",
+           "Your parcel {ord} has been delivered.", "Cash out Tk {amt} successful. TrxID {trx}.",
+           "Your appointment is confirmed for {day} at {time}.", "Your request has been received. Ref {trx}.",
+           "Your account statement for {month} is ready in the app.", "Recharge Tk {small} successful.",
+           "Apnar payment {amt} taka safol hoyeche.", "Apnar order {ord} confirm hoyeche.",
+           "আপনার {amt} টাকা পেমেন্ট সফল হয়েছে।", "আপনার অর্ডার {ord} নিশ্চিত হয়েছে।"]
+L_CHAT = ["{rel}, kal {time} e ashbo, rasta te jam.", "Bhai match dekhli? ki khela holo!", "Ammu bazar e ki ki lagbe bolo.",
+          "Kal class hobe na, sir chhuti niyeche.", "Dost notes gula pathiye dis to.", "Ajke office e onek kaj, deri hobe.",
+          "Happy anniversary {rel}! Onek shuvechha.", "Are you coming to the meeting at {time}?", "Can you pick me up from {area}?",
+          "Did you submit the assignment?", "I reached home, will call you later.", "Let's have lunch on {day}.",
+          "তুমি কখন আসবে? খাবার রেডি।", "কাল কি অফিস খোলা?", "পরীক্ষার রুটিন দিয়েছে, দেখে নিও।",
+          "Bhai {amt} taka ta {day} dibo, ektu wait kor.", "Tor pathano {amt} taka paisi, thanks."]
+
+
+def _compose_benign(rng):
+    if rng.random() < 0.5:
+        lang, offer = rng.choice(P_OFFER)
+        text = " ".join(x for x in (rng.choice(P_BRAND), offer, rng.choice(P_CTA)) if x)
+        return _render(text, rng)[0], 5, "NONE", 0, "p-compose"
+    if rng.random() < 0.5:
+        text = " ".join(x for x in (rng.choice(L_ORG), rng.choice(L_EVENT)) if x)
+    else:
+        text = rng.choice(L_CHAT)
+    return _render(text, rng)[0], 0, "NONE", 0, "l-compose"
+
+
+def _compose(rng):
+    hk = rng.choice(list(HOOK))
+    lang, hook, ht = rng.choice(HOOK[hk])
+    kind = rng.choice(_ALLOWED[hk])
+    pool = [r for r in REQ[kind] if r[0] == lang or (lang != "en" and rng.random() < 0.15)] or REQ[kind]
+    _, req, rt, act = rng.choice(pool)
+    ts = {t for t in (ht, rt) if t}
+    text, claimed = _render(f"{hook} {req}", rng)
+    if rng.random() < 0.5:
+        s, _ = _render(rng.choice(SENDER[rng.choice(_SENDER_FOR[hk])]), rng)
+        text, claimed = f"{s} {text}", True
+    if claimed:
+        ts.add("T1")
+    if rng.random() < 0.3:
+        text += " " + _render(rng.choice(_URG_BN if lang == "bn" else _URG_BL if lang == "bl" else _URG_EN), rng)[0]
+        ts.add("T5")
+    label = 1 if kind == "cred" or hk == "acct" else hk
+    if label == 3 and kind == "link":
+        act = 4  # job/investment links are joins in the guide's examples
+    return text, label, _techs_str(ts), act, f"c-{hk}-{kind}"
+
+
 # ------------------------------------------------------------------------------------------ registers / wrappers
 _URG_EN = ["Act now!", "Offer valid for {hrs} hours only.", "Do it within {mins} minutes.", "Last warning.",
            "Otherwise your account will be closed.", "Hurry, limited time!", "Today is the last day."]
@@ -468,7 +732,21 @@ def _techs_str(ts):
     return "|".join(s) if s else "NONE"
 
 
-def generate(n=4000, seed=7, mix=None):
+_MIX = {"apnar": "আপনার", "apni": "আপনি", "taka": "টাকা", "korun": "করুন", "din": "দিন", "pathan": "পাঠান",
+        "ekhoni": "এখনই", "link": "লিংক", "parcel": "পার্সেল", "account": "অ্যাকাউন্ট", "number": "নম্বর",
+        "bondho": "বন্ধ", "hobe": "হবে", "jabe": "যাবে", "ache": "আছে", "ase": "আছে", "theke": "থেকে",
+        "jonno": "জন্য", "ami": "আমি", "bhai": "ভাই", "ajkei": "আজই", "click": "ক্লিক", "offer": "অফার",
+        "income": "আয়", "chakri": "চাকরি", "bonus": "বোনাস", "puroskar": "পুরস্কার", "call": "কল", "kore": "করে",
+        "hoyeche": "হয়েছে", "moddhe": "মধ্যে", "delivery": "ডেলিভারি", "fee": "ফি", "join": "জয়েন"}
+
+
+def _code_mix(text, rng, p=0.6):
+    """Mixed-script text (Data tab: 'mixed-language'): some romanised words written in Bangla script."""
+    return re.sub(r"[A-Za-z]+", lambda m: _MIX[m.group(0).lower()] if m.group(0).lower() in _MIX and rng.random() < p
+                  else m.group(0), text)
+
+
+def generate(n=4000, seed=7, mix=None, compose=0.4):
     """n labelled synthetic rows. mix = class weights (default leans legit, like a real inbox)."""
     rng = random.Random(seed)
     mix = mix or {0: 0.28, 1: 0.15, 2: 0.13, 3: 0.13, 4: 0.13, 5: 0.18}
@@ -476,9 +754,23 @@ def generate(n=4000, seed=7, mix=None):
     out = []
     while len(out) < n:
         c = rng.choices(classes, weights)[0]
+        if c in T and rng.random() < compose:
+            text, lab_, techs_, act_, tid = _compose(rng)
+            r = rng.random()
+            if r < 0.2:
+                text = _as_conversation(text, rng, scam=True)
+            elif r < 0.27:
+                text = _as_call(text, rng)
+            elif r < 0.33 and _lang(text) == "en":
+                text = _as_email(text, rng, None)
+            out.append((text, lab_, techs_, act_, tid))
+            continue
+        if c not in T and rng.random() < compose * 0.6:
+            out.append(_compose_benign(rng))
+            continue
         if c in T:
-            raw = rng.choice(T[c])
-            techs, act, tpl = raw.split("|", 2)
+            ti = rng.randrange(len(T[c]))
+            techs, act, tpl = T[c][ti].split("|", 2)
             text, claimed = _render(tpl, rng)
             ts = set(t for t in techs.split(",") if t)
             if claimed:
@@ -496,18 +788,22 @@ def generate(n=4000, seed=7, mix=None):
                 text = _as_group_chat(text, rng)
             elif r < 0.42 and _lang(text) == "en":
                 text = _as_email(text, rng, None)
-            out.append((text, c, _techs_str(ts), int(act)))
+            out.append((text, c, _techs_str(ts), int(act), f"{c}-{ti}"))
             if rng.random() < 0.12:                             # paired hard negative: a warning quoting it
-                out.append((_warning_about(text.replace(" ||| ", " "), rng), 0, "NONE", 0))
+                out.append((_warning_about(text.replace(" ||| ", " "), rng), 0, "NONE", 0, f"{c}-{ti}"))
         else:
-            text, _ = _render(rng.choice(LEGIT if c == 0 else PROMO), rng)
+            pool = LEGIT if c == 0 else PROMO
+            ti = rng.randrange(len(pool))
+            text, _ = _render(pool[ti], rng)
             r = rng.random()
             if r < 0.12 and "|||" not in text:
                 text = _as_conversation(text, rng, scam=False)
             elif r < 0.18 and _lang(text) == "en" and "|||" not in text:
                 text = _as_email(text, rng, None)
-            out.append((text, c, "NONE", 0))
-    df = pd.DataFrame(out[:n], columns=["text", "label", "techniques", "action"])
+            out.append((text, c, "NONE", 0, f"{c}-{ti}"))
+    df = pd.DataFrame(out[:n], columns=["text", "label", "techniques", "action", "tpl"])
+    mix = [i for i, t in enumerate(df.text) if _lang(t) == "bl" and rng.random() < 0.3]
+    df.loc[mix, "text"] = [_code_mix(df.text[i], rng) for i in mix]
     if True:  # Bangla digits in half of the Bangla-script rows
         bn = df.text.str.contains(r"[ঀ-৿]") & (pd.Series([rng.random() for _ in range(len(df))]) < 0.5)
         df.loc[bn, "text"] = df.loc[bn, "text"].str.translate(_BN_DIGITS)
