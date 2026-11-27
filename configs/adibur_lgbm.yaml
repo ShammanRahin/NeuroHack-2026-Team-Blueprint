@@ -1,0 +1,15 @@
+name: adibur_lgbm
+seed: 42
+debug: false            # true = tiny subsample, ~seconds, never logged to results
+data:
+  dir: null             # null -> auto (Kaggle input / DATA_DIR / ./data)
+  train: train.csv
+  test: test.csv
+  sample_submission: sample_submission.csv
+  id_col: id
+  target_col: label
+  text_col: text
+cv: {n_splits: 5, n_repeats: 3}
+features:
+  - {name: tfidf_char, params: {ngram: [2, 5], max_features: 50000}}
+model: {name: lgbm, params: {}}
